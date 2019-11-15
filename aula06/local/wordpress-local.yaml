@@ -11,7 +11,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /home/suporte/wordpress-data
+    path: /home/vagrant/wordpress-data
   nodeAffinity:
     required:
       nodeSelectorTerms:
