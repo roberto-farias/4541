@@ -13,7 +13,7 @@ spec:
   volumes:
   - name: backup-volume
     hostPath:
-      path: /home/suporte/data
+      path: /home/vagrant
       type: Directory
   nodeSelector:
     cloud: AZURE
