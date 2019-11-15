@@ -1,0 +1,478 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kubernetes</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__left">
+    <div class="stackedit__toc">
+      
+<ul>
+<li><a href="#multi-master">Multi-Master</a>
+<ul>
+<li><a href="#preparação-1">1. Preparação</a></li>
+<li><a href="#load-balancer">2 - Load Balancer</a></li>
+<li><a href="#primeiro-master">3 - Primeiro Master</a></li>
+<li><a href="#rede-1">4 - Rede</a></li>
+<li><a href="#outros-masters">5 - Outros Masters</a></li>
+<li><a href="#testando-1">6 - Testando</a></li>
+<li><a href="#removendo-1">7 - Removendo</a></li>
+</ul>
+</li>
+<li><a href="#adicionando-nodes">Adicionando Nodes</a>
+<ul>
+<li><a href="#tls-bootstrap">TLS Bootstrap</a></li>
+<li><a href="#manualmente">Manualmente</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+  </div>
+  <div class="stackedit__right">
+    <div class="stackedit__html">
+
+<h1 id="multi-master">Multi-Master</h1>
+<p>Um cluster multi-master é um cluster tolerante a falhas com possibilidade de enfrentar problemas adversos e persistir funcionando.<br>
+Configurar um cluster multi-master em Kubernetes exige alguns passos que se executados de forma errada podem comprometer toda a instalação.<br>
+Os passos a seguir utilizam o <strong>kubeadm</strong> para criar este cluster, mas preste atenção pois alguns cuidados são necessários já que estamos rodando este ambiente em máquinas virtuais locais.</p>
+<p>Um cluster Kubernetes trabalhando em modo multi-master precisa ter um ponto único de acesso para os masters, e a inicialização do cluster deve ser feita utilizando o endereço do próprio load balancer, que no nosso caso será o <strong>HAProxy</strong>:</p>
+<div class="mermaid"><svg xmlns="http://www.w3.org/2000/svg" id="mermaid-svg-VIQ3ahUlhmM0t59N" width="100%" style="max-width: 375px;" viewBox="0 0 375 256.1499786376953"><g transform="translate(-12, -12)"><g class="output"><g class="clusters"></g><g class="edgePaths"><g class="edgePath" style="opacity: 1;"><path class="path" d="M115,140.07498931884766L140,140.07498931884766L165,140.07498931884766" marker-end="url(#arrowhead525)" style="fill:none"></path><defs><marker id="arrowhead525" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1px; stroke-dasharray: 1px, 0px;"></path></marker></defs></g><g class="edgePath" style="opacity: 1;"><path class="path" d="M231.8233552678273,105.22352753436783L275,43.35832977294922L300,43.35832977294922" marker-end="url(#arrowhead526)" style="fill:none"></path><defs><marker id="arrowhead526" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1px; stroke-dasharray: 1px, 0px;"></path></marker></defs></g><g class="edgePath" style="opacity: 1;"><path class="path" d="M250,140.07498931884766L275,140.07498931884766L300,140.07498931884766" marker-end="url(#arrowhead527)" style="fill:none"></path><defs><marker id="arrowhead527" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1px; stroke-dasharray: 1px, 0px;"></path></marker></defs></g><g class="edgePath" style="opacity: 1;"><path class="path" d="M231.8233552678273,174.92645110332748L275,236.7916488647461L300,236.7916488647461" marker-end="url(#arrowhead528)" style="fill:none"></path><defs><marker id="arrowhead528" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowheadPath" style="stroke-width: 1px; stroke-dasharray: 1px, 0px;"></path></marker></defs></g></g><g class="edgeLabels"><g class="edgeLabel" style="opacity: 1;" transform=""><g transform="translate(0,0)" class="label"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" style="opacity: 1;" transform=""><g transform="translate(0,0)" class="label"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" style="opacity: 1;" transform=""><g transform="translate(0,0)" class="label"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span class="edgeLabel"></span></div></foreignObject></g></g><g class="edgeLabel" style="opacity: 1;" transform=""><g transform="translate(0,0)" class="label"><foreignObject width="0" height="0"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;"><span class="edgeLabel"></span></div></foreignObject></g></g></g><g class="nodes"><g class="node" style="opacity: 1;" id="A" transform="translate(67.5,140.07498931884766)"><rect rx="0" ry="0" x="-47.5" y="-23.35832977294922" width="95" height="46.71665954589844"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-37.5,-13.358329772949219)"><foreignObject width="75" height="26.716659545898438"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Requisição</div></foreignObject></g></g></g><g class="node" style="opacity: 1;" id="B" transform="translate(207.5,140.07498931884766)"><circle x="-42.5" y="-23.35832977294922" r="42.5"></circle><g class="label" transform="translate(0,0)"><g transform="translate(-32.5,-13.358329772949219)"><foreignObject width="65" height="26.716659545898438"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Ha Proxy</div></foreignObject></g></g></g><g class="node" style="opacity: 1;" id="C" transform="translate(339.5,43.35832977294922)"><rect rx="0" ry="0" x="-39.5" y="-23.35832977294922" width="79" height="46.71665954589844"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-29.5,-13.358329772949219)"><foreignObject width="59" height="26.716659545898438"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Master1</div></foreignObject></g></g></g><g class="node" style="opacity: 1;" id="D" transform="translate(339.5,140.07498931884766)"><rect rx="0" ry="0" x="-39.5" y="-23.35832977294922" width="79" height="46.71665954589844"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-29.5,-13.358329772949219)"><foreignObject width="59" height="26.716659545898438"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Master2</div></foreignObject></g></g></g><g class="node" style="opacity: 1;" id="E" transform="translate(339.5,236.7916488647461)"><rect rx="0" ry="0" x="-39.5" y="-23.35832977294922" width="79" height="46.71665954589844"></rect><g class="label" transform="translate(0,0)"><g transform="translate(-29.5,-13.358329772949219)"><foreignObject width="59" height="26.716659545898438"><div xmlns="http://www.w3.org/1999/xhtml" style="display: inline-block; white-space: nowrap;">Master3</div></foreignObject></g></g></g></g></g></g></svg></div>
+<h2 id="preparação-1">1. Preparação</h2>
+<p>Os próximos passos abordam a instalação dos pacotes necessários e as configurações exigidas para que nossas máquinas possam se conversar através dos endereços corretos.</p>
+<h3 id="criando-o-ambiente-1">1.1 - Criando o ambiente</h3>
+<p>Crie uma pasta em qualquer lugar do seu computador, dentro desta pasta colocaremos o arquivo do Vagrant responsável por configurar a infraestrutura necessária.<br>
+Como aqui na 4Linux sempre utilizamos Linux, os exemplos de comandos básicos de terminal serão baseados no Linux, tudo bem?</p>
+<p>A pasta se chamará <em><strong>k8s-ha</strong></em>:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cd</span> ~/
+<span class="token function">mkdir</span> k8s-ha
+</code></pre>
+<p>Dentro desta pasta vamos criar um arquivo chamado <em><strong>Vagrantfile</strong></em> com a definição das nossas 4 máquinas:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cd</span> k8s-ha
+<span class="token function">cat</span> <span class="token operator">&gt;</span> Vagrantfile <span class="token operator">&lt;&lt;</span><span class="token string">'EOF'
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+vms = {
+  'balancer' =&gt; {'memory' =&gt; '256', 'cpus' =&gt; 1, 'ip' =&gt; '200'},
+  'master3' =&gt; {'memory' =&gt; '2048', 'cpus' =&gt; 2, 'ip' =&gt; '30'},
+  'master2' =&gt; {'memory' =&gt; '2048', 'cpus' =&gt; 2, 'ip' =&gt; '20'},
+  'master1' =&gt; {'memory' =&gt; '2048', 'cpus' =&gt; 2, 'ip' =&gt; '10'}
+}
+
+Vagrant.configure('2') do |config|
+
+  config.vm.box = 'debian/buster64'
+  config.vm.box_check_update = false
+  
+  vms.each do |name, conf|
+    config.vm.define "#{name}" do |k|
+      k.vm.hostname = "#{name}.example.com"
+      k.vm.network 'private_network', ip: "172.27.11.#{conf['ip']}"
+      k.vm.provider 'virtualbox' do |vb|
+        vb.memory = conf['memory']
+        vb.cpus = conf['cpus']
+      end
+    end
+  end
+end
+EOF</span>
+</code></pre>
+<p>Pronto! Vamos levantar nossas máquinas virtuais:</p>
+<pre class=" language-bash"><code class="prism  language-bash">vagrant up
+</code></pre>
+<p>É muito importante ressaltar que <strong>todas as máquinas do cluster</strong> deverão possuír hostnames diferentes.</p>
+<h3 id="acessando-o-ambiente-1">1.2 - Acessando o Ambiente</h3>
+<p>Uma vez que as máquinas estejam funcionando, poderemos acessá-las executando um simpes comando do Vagrant dentro do diretório <em><strong>k8s-ha</strong></em>:</p>
+<pre class=" language-bash"><code class="prism  language-bash">vagrant <span class="token function">ssh</span> master1
+</code></pre>
+<p>Os nomes das máquinas estão descritos no arquivo <em><strong>Vagrantfile</strong></em> mas também é possível verificá-los com o comando:</p>
+<pre class=" language-bash"><code class="prism  language-bash">vagrant status
+</code></pre>
+<h3 id="docker-binários-do-kubernetes-e-ajustes-1">1.3 - Docker, binários do Kubernetes e ajustes</h3>
+<p>Os passos a seguir precisarão ser executados em <em><strong>todos os masters</strong></em>. Como o foco da instalação é a configuração do ambiente, executaremos um pequeno script que faz a instalação toda de uma vez.</p>
+<p>Este script instalará o <strong>docker</strong> juntamente com os componentes do kubernetes <strong>kubelet</strong>, <strong>kubeadm</strong> e <strong>kubectl</strong>.</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">sudo</span> <span class="token function">su</span>
+<span class="token function">bash</span> <span class="token operator">&lt;&lt;</span><span class="token string">EOF
+# Lembre-se de executar nos outros masters!
+apt-get update
+apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common vim
+curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian <span class="token variable"><span class="token variable">$(</span>lsb_release -cs<span class="token variable">)</span></span> stable"
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+echo 'deb https://apt.kubernetes.io/ kubernetes-xenial main' &gt; /etc/apt/sources.list.d/kubernetes.list
+apt-get update
+apt-get install -y docker-ce docker-ce-cli containerd.io kubelet kubeadm kubectl
+apt-mark hold kubelet kubeadm kubectl
+EOF</span>
+</code></pre>
+<p>Além da instalação dos componentes, precisaremos desabilitar o swap - existe uma issue a respeito do swap já faz um bom tempo, mas ainda não foi corrigido. Vou lhe ensinar um comando para desabilitar o swap de uma só vez e que persista durante as reinicializações:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">sed</span> -Ei <span class="token string">'s/(.*swap.*)/#\1/g'</span> /etc/fstab
+swapoff -a
+</code></pre>
+<p>O Docker instalado vem por padrão configurado com o <strong>cgroupdriver</strong> como <strong>cgroupfs</strong> e o Kubernetes recomanda o <strong>systemd</strong>, vamos alterá-lo:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cat</span> <span class="token operator">&gt;</span> /etc/docker/daemon.json <span class="token operator">&lt;&lt;</span><span class="token string">EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "journald"
+}
+EOF</span>
+systemctl restart docker
+</code></pre>
+<p>O Debian 10 e as distribuições mais novas modificaram o comportamento do iptables que agora utiliza por padrão o <strong>nftables</strong> através de uma camada de compatibilidade. O <strong>kube-proxy</strong> responsável pelo roteamento não suporta esse tipo de configuração e acaba duplicando as rotas causando problemas. Dessa forma, precisaremos modificar o iptables para se comportar do modo <strong>“legacy”</strong>:</p>
+<pre class=" language-bash"><code class="prism  language-bash">update-alternatives --set iptables /usr/sbin/iptables-legacy
+update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives --set arptables /usr/sbin/arptables-legacy
+update-alternatives --set ebtables /usr/sbin/ebtables-legacy
+</code></pre>
+<p>Feito isso, precisaremos fazer mais um pequeno ajuste no serviço do <strong>kubelet</strong> - responsável por levantar os contêineres base do cluster - pois estamos utilizando o Vagrant e existe mais de uma interface de rede em nossa máquina. Vamos configurar o <strong>kubelet</strong> para utilizar um endereço IP específico:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token keyword">echo</span> <span class="token string">"KUBELET_EXTRA_ARGS='--node-ip=172.27.11.10'"</span> <span class="token operator">&gt;</span> /etc/default/kubelet
+</code></pre>
+<p><strong>Obs:</strong> Você precisará executar estes comandos em todos os masters, e lembre-se de trocar o final do IP para <strong>20</strong> e <strong>30</strong> ao executar este último comando.</p>
+<p>Pronto! Vamos para o load balancer!</p>
+<h2 id="load-balancer">2 - Load Balancer</h2>
+<p>Conforme foi dito, precisaremos centralizar o acesso aos masters através de um único ponto e para isso utilizaremos um load balancer capaz de trabalhar diretamente com TCP. O HAProxy é uma boa solução.</p>
+<h3 id="configurando">2.1 - Configurando</h3>
+<p>A configuração do load balancer felizmente é muito simples graças a própria simplicidade do HaProxy. Apenas por curiosidade, o idealizador e desenvolvedor do HAProxy foi também um dos desenvolvedores do kernel Linux por muito tempo.</p>
+<p>Vamos acessar o balancer, lembre-se de sair das outras máquinas virtuais e voltar para o diretório onde está o Vagrantfile:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cd</span> ~/k8s-ha
+vagrant <span class="token function">ssh</span> balancer
+</code></pre>
+<p>Instale os pacotes do HAProxy, e você notará que ele é incrivelmente pequeno:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">sudo</span> <span class="token function">su</span>
+<span class="token function">apt-get</span> update
+<span class="token function">apt-get</span> <span class="token function">install</span> -y haproxy vim
+</code></pre>
+<p>Pronto! Vamos configurá-lo - para simplificar faremos em um único comando:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cat</span> <span class="token operator">&gt;</span> /etc/haproxy/haproxy.cfg <span class="token operator">&lt;&lt;</span><span class="token string">EOF
+global
+user haproxy
+group haproxy
+
+defaults
+mode http
+log global
+retries 2
+timeout connect 3000ms
+timeout server 5000ms
+timeout client 5000ms
+
+frontend kubernetes
+bind 172.27.11.200:6443
+option tcplog
+mode tcp
+default_backend kubernetes-master-nodes
+
+backend kubernetes-master-nodes
+mode tcp
+balance roundrobin
+option tcp-check
+server k8s-master-0 172.27.11.10:6443 check fall 3 rise 2
+server k8s-master-1 172.27.11.20:6443 check fall 3 rise 2
+server k8s-master-2 172.27.11.30:6443 check fall 3 rise 2
+EOF</span>
+</code></pre>
+<p>O arquivo parece um pouco assustador, mas é simples de entender:</p>
+<ul>
+<li>O HAProxy precisa de um <strong>frontend</strong> responsável por receber as conexões e um <strong>backend</strong> responsável por receber essas conexões.</li>
+<li>A interface de rede, o ip e a porta em que o HAProxy estará anexado é definido pelo <strong>bind</strong>.</li>
+<li>O modo de conexão deverá ser <strong>tcp</strong> e não http como fazemos com balanceadores para webservers.</li>
+<li><strong>balance</strong> define o modo de balanceamento, neste caso roundrobin - um diferente a cada conexão, existem outros como por exemplo <strong>leastconn</strong>, o menos carregado.</li>
+<li><strong>tpc-check</strong> define que haverá verificação do status dos serviços dos servidores definidos</li>
+<li><strong>server</strong> define cada máquina para onde o HAProxy redirecionará a conexão, precisarão de 3 falhas para sair da lista e 2 conexões bem sucedidades para voltar para a lista.</li>
+</ul>
+<h3 id="verificando">2.2 - Verificando</h3>
+<p>Vamos reiniciar o HAProxy e verificar se a porta está exposta - o que significa que o serviço está funcionando:</p>
+<p>systemctl restart haproxy # Reinicia o serviço<br>
+systemctl status haproxy # Verifica status do serviço<br>
+ss -nltp | grep 6443 # Procura pelas portas TCP abertas</p>
+<p>Pronto! Agora vamos focar na instalação do cluster!</p>
+<h2 id="primeiro-master">3 - Primeiro Master</h2>
+<p>Vamos voltar para os masters. O primeiro master é o responsável por criar a configuração inicial juntamente com os <strong>certificados</strong>. É sua responsabilidade popular o primeiro <strong>etcd</strong> que será a base para os demais.</p>
+<h3 id="kubeadm-config.yml">3.1 - kubeadm-config.yml</h3>
+<p>Para iniciar o cluster através do <strong>kubeadm</strong> é preciso criar um arquivo que indicará onde está o load balancer bem como qual o endereço de rede utilizaremos tanto para a máquina como para os contêineres.</p>
+<p>Vamos criar este arquivo em <em><strong>/root/kubeadm-config.yml</strong></em>:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cat</span> <span class="token operator">&gt;</span> /root/kubeadm-config.yml <span class="token operator">&lt;&lt;</span><span class="token string">EOF
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: stable
+controlPlaneEndpoint: "172.27.11.200:6443"
+networking:
+  podSubnet: "10.244.0.0/16"
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "172.27.11.10"
+  bindPort: 6443
+EOF</span>
+</code></pre>
+<h3 id="iniciar-o-cluster-1">3.2 - Iniciar o Cluster</h3>
+<p>Com o arquivo pronto, vamos finalmente iniciar o primeiro master do cluster:</p>
+<pre class=" language-bash"><code class="prism  language-bash">kubeadm init --config <span class="token string">'/root/kubeadm-config.yml'</span> --upload-certs
+</code></pre>
+<p>Ao final da configuração a saída no console será semelhante a seguinte:</p>
+<pre><code>Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of the control-plane node running the following command on each as root:
+
+kubeadm join 172.27.11.200:6443 --token 2vjyq3.aaepezlc9szigtcp \
+--discovery-token-ca-cert-hash sha256:fabea16da44390b45c1749e6fb4949ced6c82a1abd97cebe46db9bb175fa8566 \
+--control-plane --certificate-key f936242f98d7d56a3b48963555eea669020716f81788414edf84044addaa7814
+
+Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
+As a safeguard, uploaded-certs will be deleted in two hours; If necessary, you can use 
+"kubeadm init phase upload-certs --upload-certs" to reload certs afterward.
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.27.11.200:6443 --token 2vjyq3.aaepezlc9szigtcp \
+--discovery-token-ca-cert-hash sha256:fabea16da44390b45c1749e6fb4949ced6c82a1abd97cebe46db9bb175fa8566
+</code></pre>
+<p>A primeira parte lhe explica como copiar o arquivo utilizado para a comunicação do <strong>kubectl</strong> com o cluster.</p>
+<p>As linha seguintes explicam como adicionar outros <strong>masters</strong> - ou control planes - e outros <strong>nodes</strong>, respectivamente. <strong>Anote a linha de adição dos masters e dos nodes</strong>, vamos utilizar a dos masters nas outras máquinas.</p>
+<h3 id="testando-conexão-1">3.3 - Testando Conexão</h3>
+<p>Vamos aproveitar e copiar o arquivo de conexão para o usuário root:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">mkdir</span> -p /root/.kube
+<span class="token function">cp</span> /etc/kubernetes/admin.conf <span class="token variable">$HOME</span>/.kube/config
+</code></pre>
+<p>Teste se a conexão com o cluster funciona:</p>
+<pre class=" language-bash"><code class="prism  language-bash">kubectl get nodes
+</code></pre>
+<p>Deverá aparecer algo semelhante:</p>
+<pre class=" language-bash"><code class="prism  language-bash">NAME     STATUS    ROLES   AGE    VERSION
+master1  NotReady  master  4m51s  v1.16.1
+</code></pre>
+<p>Não tenha receio, as máquinas ficarão <strong>Not Ready</strong> enquanto não configurarmos a rede, que é o nosso próximo passo!</p>
+<h2 id="rede-1">4 - Rede</h2>
+<p>Para que a comunicação entre os pods funcione, você precisa instalar um dos plugins de rede disponíveis, existem diversos. O Kubernetes não define um plugin de rede padrão, você precisa escolher, e neste caso vamos instalar o plugin do <a href="https://www.projectcalico.org/">Calico</a>. Caso você não entenda essa passo, sugiro que comece com um cluster simples, faça alguns testes e então volte para cá, você sempre será bem vindo.</p>
+<h3 id="calico-1">4.1 - Calico</h3>
+<p>Ainda na máquina <strong>master1</strong> execute os seguintes comandos para baixar as definições do Calico, modificar a rede para <strong>10.244.0.0/16</strong> utilizada e adicioná-lo ao cluster. O endereço 10.244.0.0/16 foi o que definimos em nosso arquivo de inicialização do cluster:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cd</span> /root
+<span class="token function">wget</span> https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+<span class="token function">sed</span> -i <span class="token string">'s?192.168.0.0/16?10.244.0.0/16?g'</span> /root/calico.yaml
+kubectl apply -f /root/calico.yaml
+</code></pre>
+<h2 id="outros-masters">5 - Outros Masters</h2>
+<p>Os passos que deverão ser executados antes de colarmos o comando fornecido pelo primeiro master são os seguintes:</p>
+<ol>
+<li>Instalar o Docker</li>
+<li>Instalar os binários do Kubernetes</li>
+<li>Desativar o <em><strong>swap</strong></em></li>
+<li>Modificar o docker para utilizar o driver de cgroups para <em><strong>systemd</strong></em></li>
+<li>Alterar o arquivo <em><strong>/etc/default/kubelet</strong></em> para utilizar o endereço ip correto</li>
+</ol>
+<h3 id="ingressar-no-cluster-1">5.1 - Ingressar no Cluster</h3>
+<p>O comando que deveremos executar é exatamente o mesmo que o primeiro master nos mostrou com <strong>apenas uma modificação:</strong></p>
+<p>Deveremos especificar aqui também em qual interface este master estará escutando com a opção <em><strong>–apiserver-advertise-address=ip.da.maquina</strong></em>, neste caso vou exemplificar os comandos a partir da <strong>master2</strong>:</p>
+<pre class=" language-bash"><code class="prism  language-bash">kubeadm <span class="token function">join</span> 172.27.11.200:6443 --token m2bj3h.fjf2tjccajgldqi2 \
+--discovery-token-ca-cert-hash sha256:534305ca1b14a916c59f3d413f75158a6479a607ab97e9daf1212603c1683491 \
+--control-plane --certificate-key c15d7c091fbbef93b3665b30d16e587fb37c1481f301bc11dc05cb27442c8181 --apiserver-advertise-address<span class="token operator">=</span>172.27.11.20
+</code></pre>
+<p>Basta esperar um pouquinho… e pronto! Temos agora dois masters!</p>
+<p>Execute a mesma sequência no <strong>master3</strong> e lembre-se de modificar os endereços!</p>
+<h2 id="testando-1">6 - Testando</h2>
+<p>Nosso cluster está pronto, vamos verificar! Vá para a máquina <strong>master1</strong> pois lá configuramos o usuário <strong>root</strong> para acessar o cluster:</p>
+<pre class=" language-bash"><code class="prism  language-bash">vagrant <span class="token function">ssh</span> master1
+<span class="token function">sudo</span> <span class="token function">su</span> -
+kubectl get nodes
+</code></pre>
+<p>A saída deverá monstrar os três masters prontos:</p>
+<pre class=" language-bash"><code class="prism  language-bash">NAME      STATUS   ROLES    AGE     VERSION
+master1   Ready    master   21m     v1.16.1
+master2   Ready    master   16m     v1.16.1
+master3   Ready    master   4m58s   v1.16.1
+</code></pre>
+<p>Seria pedir muito adicionar um outro node, muita gente não terá memória RAM suficiente, neste caso, vamos configurar os masters para aceitarem pods de aplicações:</p>
+<p>kubectl taint nodes --all <a href="http://node-role.kubernetes.io/master-">node-role.kubernetes.io/master-</a></p>
+<p>E adicionar um pequeno <strong>DaemonSet</strong> para criar um pod em cada uma das máquinas:</p>
+<pre class=" language-bash"><code class="prism  language-bash">kubectl apply -f - <span class="token operator">&lt;&lt;</span><span class="token string">EOF
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: sh-cgi
+  labels:
+    name: sh-cgi
+spec:
+  selector:
+    matchLabels:
+      name: sh-cgi
+  template:
+    metadata:
+      labels:
+        name: sh-cgi
+    spec:
+      containers:
+      - name: fluentd-elasticsearch
+        image: hectorvido/sh-cgi
+EOF</span>
+</code></pre>
+<p>E veja que existe um pod em cada máquina:</p>
+<pre><code>kubectl get pods -o wide
+NAME           READY   STATUS    RESTARTS   AGE   IP              NODE   
+sh-cgi-46xn6   1/1     Running   0          80s   10.244.137.65   master1
+sh-cgi-btmq2   1/1     Running   0          80s   10.244.180.4    master2
+sh-cgi-fmtjl   1/1     Running   0          80s   10.244.136.1    master3
+</code></pre>
+<p>Pronto! Seu cluster multi-master está funcionando! Para adicionar nodes comuns nessa infraestrutura, basta seguir os passos de instalação e modificação do <strong>docker</strong> e do <strong>/etc/kubelet/default</strong>. Porém, ao ingressar a máquina no cluster, executar o outro comando.</p>
+<p>Caso você não tenha anotado, poderá pegar outro através do seguinte comando:</p>
+<pre class=" language-bash"><code class="prism  language-bash">kubeadm token create --print-join-command
+</code></pre>
+<h2 id="removendo-1">7 - Removendo</h2>
+<p>Caso deseje remover todo o cluster, vá até o diretório <em>k8s</em> e utilize o comando <code>vagrant destroy</code>:</p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cd</span> k8s-ha
+vagrant destroy
+</code></pre>
+<h1 id="adicionando-nodes">Adicionando Nodes</h1>
+<p>Já vimos como adicionar nodes através do kubeadm, e basta um simples comando. Porém existem outras formas de adicionar máquinas ao cluster, principalmente em versões mais antigas do Kubernetes onde a opção do <strong>kubeadm</strong> ainda não era possível, as duas formas abordadas serão:</p>
+<ul>
+<li>TLS Bootstrap</li>
+<li>Manualmente</li>
+</ul>
+<h2 id="tls-bootstrap">TLS Bootstrap</h2>
+<p>TLS Bootstrap é o processo em que uma máquina requisita os dados de acesso aos masters, recebe os certificados da CA e passa a ser parte integrante do cluster.</p>
+<h2 id="manualmente">Manualmente</h2>
+<p>Para provisionar um novo node manualmente precisamos passar por alguns pontos:</p>
+<ul>
+<li>Assinar certificado no master</li>
+<li>Arquivo de comunicação com o cluster - kubeconfig</li>
+<li>Certificado da CA</li>
+<li>Arquivo de configuração do kubelet</li>
+<li>Arquivo de serviço</li>
+</ul>
+<h3 id="certificado">Certificado</h3>
+<p>No <strong>node1</strong> vamos criar a estrutura básica de diretórios que será utilizada mais adiante:</p>
+<p><strong><code>node1</code></strong></p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">mkdir</span> -p /var/lib/kubelet
+<span class="token function">mkdir</span> -p /etc/kubernetes/<span class="token punctuation">{</span>pki,manifests<span class="token punctuation">}</span>
+</code></pre>
+<p>No <strong>master1</strong> vamos começar criando e assinando os certificados no master:</p>
+<p><strong><code>master1</code></strong></p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">sudo</span> <span class="token function">su</span>
+<span class="token function">mkdir</span> /root/certs
+<span class="token function">cd</span> /root/certs
+</code></pre>
+<p>Crie um arquivo chamado <code>/root/certs/csr.conf</code> com diretivas que serão utilizadas durante a criação do nosso certificado:</p>
+<p><strong><code>csr.conf</code></strong>:</p>
+<pre class=" language-ini"><code class="prism  language-ini"><span class="token selector">[ req ]</span>
+<span class="token constant">default_bits</span> <span class="token attr-value"><span class="token punctuation">=</span> 2048</span>
+<span class="token constant">prompt</span> <span class="token attr-value"><span class="token punctuation">=</span> no</span>
+<span class="token constant">default_md</span> <span class="token attr-value"><span class="token punctuation">=</span> sha256</span>
+<span class="token constant">req_extensions</span> <span class="token attr-value"><span class="token punctuation">=</span> req_ext</span>
+<span class="token constant">distinguished_name</span> <span class="token attr-value"><span class="token punctuation">=</span> dn</span>
+
+<span class="token selector">[ dn ]</span>
+<span class="token constant">C</span> <span class="token attr-value"><span class="token punctuation">=</span> BR</span>
+<span class="token constant">ST</span> <span class="token attr-value"><span class="token punctuation">=</span> São Paulo</span>
+<span class="token constant">L</span> <span class="token attr-value"><span class="token punctuation">=</span> São Paulo</span>
+<span class="token constant">O</span> <span class="token attr-value"><span class="token punctuation">=</span> system:nodes</span>
+<span class="token constant">OU</span> <span class="token attr-value"><span class="token punctuation">=</span> 4Linux</span>
+<span class="token constant">CN</span> <span class="token attr-value"><span class="token punctuation">=</span> system:node:node1</span>
+
+<span class="token selector">[ req_ext ]</span>
+<span class="token constant">subjectAltName</span> <span class="token attr-value"><span class="token punctuation">=</span> @alt_names</span>
+
+<span class="token selector">[ alt_names ]</span>
+<span class="token constant">DNS.1</span> <span class="token attr-value"><span class="token punctuation">=</span> node1</span>
+<span class="token constant">IP.1</span> <span class="token attr-value"><span class="token punctuation">=</span> 27.11.90.101</span>
+
+<span class="token selector">[ v3_ext ]</span>
+<span class="token constant">authorityKeyIdentifier</span><span class="token attr-value"><span class="token punctuation">=</span>keyid,issuer:always</span>
+<span class="token constant">basicConstraints</span><span class="token attr-value"><span class="token punctuation">=</span>CA:FALSE</span>
+<span class="token constant">keyUsage</span><span class="token attr-value"><span class="token punctuation">=</span>keyEncipherment,dataEncipherment</span>
+<span class="token constant">extendedKeyUsage</span><span class="token attr-value"><span class="token punctuation">=</span>serverAuth,clientAuth</span>
+<span class="token constant">subjectAltName</span><span class="token attr-value"><span class="token punctuation">=</span>@alt_names</span>
+</code></pre>
+<p>Diferente do que estamos acostumados por aí, os componentes e usuários do Kubernetes tem acesso ao cluster através de certificados, e dentro do certificado é que estão definidos o usuário e o grupo.<br>
+O usuario neste caso é <strong>system:node:node1</strong> e o grupo <strong>system:nodes</strong>.<br>
+Vamos gerar a chave, o pedido de assinatura e a assinatura em sí:</p>
+<p><strong><code>master1</code></strong></p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">cd</span> /root/certs
+openssl genrsa -out node1.key 2048
+openssl req -new -key node1.key -out node1.csr -config csr.conf
+openssl x509 -req -in node1.csr -CA /etc/kubernetes/pki/ca.crt \
+-CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out node1.crt -days 365 \
+-extensions v3_ext -extfile csr.conf
+</code></pre>
+<p>Temos o certificado, agora precisamos embutí-lo em nosso arquivo de configuração chamado <strong>kubeconfig</strong>.</p>
+<h3 id="kubeconfig">Kubeconfig</h3>
+<p>Vamos criar o arquivo de comunicação do kubelet com o cluster. Poderíamos criar este arquivo na mão, mas o próprio binário <strong>kubectl</strong> possuí um facilitador. Mesmo sendo um facilitador, a sequência de comandos assusta:</p>
+<p><strong><code>master1</code></strong></p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token comment"># configura o cluster</span>
+kubectl --kubeconfig <span class="token string">'node1.conf'</span> config set-cluster <span class="token string">'kubernetes'</span> \
+--server<span class="token operator">=</span><span class="token string">'https://27.11.90.200:6443'</span> \
+--certificate-authority <span class="token string">'/etc/kubernetes/pki/ca.crt'</span> \
+--embed-certs
+<span class="token comment"># configura o usuário</span>
+kubectl --kubeconfig <span class="token string">'node1.conf'</span> config set-credentials <span class="token string">'node1'</span> \
+--client-key <span class="token string">'node1.key'</span> \
+--client-certificate <span class="token string">'node1.crt'</span> \
+--embed-certs
+<span class="token comment"># configura o contexto (cluster + usuário)</span>
+kubectl --kubeconfig <span class="token string">'node1.conf'</span> config set-context <span class="token string">'default'</span> \
+--cluster <span class="token string">'kubernetes'</span> \
+--user <span class="token string">'node1'</span>
+<span class="token comment"># configura o contexto padrão</span>
+kubectl --kubeconfig <span class="token string">'node1.conf'</span> config use-context <span class="token string">'default'</span>
+</code></pre>
+<p>Agora basta copiar o arquivo de conexão para a máquina em questão:</p>
+<p><strong><code>master1</code></strong></p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">scp</span> node1.conf 27.11.90.101:/etc/kubernetes/kubelet.conf
+</code></pre>
+<h3 id="ca-e-kubelet">CA e Kubelet</h3>
+<p>Feito isso, vamos aproveitar e copiar o arquivo de configuração do kubelet <code>/var/lib/kubelet/config.yaml</code> e o certificado da CA em <code>/etc/kubernetes/pki/ca.crt</code> para a máquina <strong>node1</strong> :</p>
+<p><strong><code>master1</code></strong></p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">scp</span> /var/lib/kubelet/config.yaml 27.11.90.101:/var/lib/kubelet/config.yaml
+<span class="token function">scp</span> /etc/kubernetes/pki/ca.crt 27.11.90.101:/etc/kubernetes/pki/ca.crt
+</code></pre>
+<p><strong>Obs:</strong> O certificado da CA e o arquivo de configuração do kubelet são necessários para iniciar a comunicação com o cluster.</p>
+<h3 id="serviço">Serviço</h3>
+<p>Crie o seguinte arquivo de serviço em <code>/lib/systemd/system/kubelet.service</code> em <strong>node1</strong>:</p>
+<pre class=" language-ini"><code class="prism  language-ini"><span class="token selector">[Unit]</span>
+<span class="token constant">Description</span><span class="token attr-value"><span class="token punctuation">=</span>kubelet: The Kubernetes Node Agent</span>
+<span class="token constant">Documentation</span><span class="token attr-value"><span class="token punctuation">=</span>https://kubernetes.io/docs/home/</span>
+
+<span class="token selector">[Service]</span>
+<span class="token constant">ExecStart</span><span class="token attr-value"><span class="token punctuation">=</span>/usr/bin/kubelet \</span>
+<span class="token constant">--kubeconfig</span><span class="token attr-value"><span class="token punctuation">=</span>/etc/kubernetes/kubelet.conf \</span>
+<span class="token constant">--config</span><span class="token attr-value"><span class="token punctuation">=</span>/var/lib/kubelet/config.yaml \</span>
+<span class="token constant">--network-plugin</span><span class="token attr-value"><span class="token punctuation">=</span>cni \</span>
+<span class="token constant">--node-ip</span><span class="token attr-value"><span class="token punctuation">=</span>27.11.90.101</span>
+<span class="token constant">Restart</span><span class="token attr-value"><span class="token punctuation">=</span>always</span>
+<span class="token constant">StartLimitInterval</span><span class="token attr-value"><span class="token punctuation">=</span>0</span>
+<span class="token constant">RestartSec</span><span class="token attr-value"><span class="token punctuation">=</span>10</span>
+
+<span class="token selector">[Install]</span>
+<span class="token constant">WantedBy</span><span class="token attr-value"><span class="token punctuation">=</span>multi-user.target</span>
+</code></pre>
+<p>E remova o arquivo adicional:</p>
+<p><strong><code>node1</code></strong></p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">rm</span> -rf /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+</code></pre>
+<p>Se tudo foi provisionado corretamente, basta iniciar o serviço do kubelet:</p>
+<p><strong><code>node1</code></strong></p>
+<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">sudo</span> <span class="token function">su</span>
+systemctl daemon-reload
+systemctl start kubelet
+</code></pre>
+
+    </div>
+  </div>
+</body>
+
+</html>
