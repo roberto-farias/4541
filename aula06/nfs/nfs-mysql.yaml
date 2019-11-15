@@ -10,5 +10,5 @@ spec:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
   nfs:
-    server: 200.100.50.200
-    path: /home/suporte/mysql-data
+    server: 172.27.11.40
+    path: /home/vagrant/mysql-data
