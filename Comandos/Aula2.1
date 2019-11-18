@@ -39,6 +39,14 @@ Salve a imagem servidor-web que inclui o apache para um arquivo tar:
 docker image save servidor-web > imagem-servidor-web.tar
 du -sh imagem-servidor-web.tar
 
+Carregue a imagem servidor-web a partir do arquivo tar, e inicie o container servidor-web utilizando a nova imagem:
+docker image load < imagem-servidor-web.tar
+docker image ls
+
+Carregue a imagem servidor-web a partir do arquivo tar, e inicie o container servidor-web utilizando a nova imagem:
+docker image load < imagem-servidor-web.tar
+docker image ls
+
 Remova o container servidor-debian e apenas a imagem servidor-web:
 docker container rm -f servidor-debian
 docker image rm -f servidor-web
