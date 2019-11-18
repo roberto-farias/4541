@@ -16,8 +16,9 @@ Use o seguinte comando para configurar o repositório estável para a distribui�
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
 
 
-Use o seguinte comando para configurar o repositório estável para a distribuição Debian:
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+Atualize a lista de pacotes e instale o Docker:
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 Adicione o usuário vagrant ao grupo "docker" e verifique a versão do Docker:
 sudo usermod -aG docker vagrant
