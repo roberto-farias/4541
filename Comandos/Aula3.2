@@ -1,0 +1,92 @@
+Para mapear a porta 80 do container no host local, execute um container com a “flag -p”:
+docker container run -d --name webserver -p 80:80 webserver
+
+Para verificar qual é a porta que está sendo mapeada no container, execute o comando:
+docker container port webserver
+
+Faça um teste acessando o servidor Web Apache, através da máquina local:
+http://172.27.11.10
+
+Remova a execução do container “webserver”, antes de continuar os próximos comandos:
+docker container rm -f webserver
+
+Para utilizar a rede bridge, execute o container com a flag --network bridge:
+docker container run -d --name webserver --network bridge -p 80:80 webserver
+
+Verifique qual é a porta que está sendo mapeada no host local:
+docker container port webserver
+sudo ss -ntpl | grep 80
+
+Faça um teste acessando o Apache do navegador, depois remova a execução do mesmo:
+http://172.27.11.10
+docker container rm -f webserver
+
+Para executar um container utilizando a rede host, execute o container com a flag --net:
+docker container run -d --name webserver --net host webserver
+
+Veja se o container não possui porta mapeada, pois o ”Apache” está utilizando a porta diretamente no host local:
+docker container port webserver
+sudo ss -ntpl | grep 80
+
+Vamos testar o uso da rede padrão com dois containers, através da imagem “Debian”:
+docker container run -di --name c1 -h servidor debian
+docker container run -di --name c2 -h cliente debian
+
+Verifique o endereço IP de cada container, através do comando “docker container exec”:
+docker container exec c1 ip -c a
+docker container exec c2 ip -c a
+
+Faça um teste de conectividade entre os containers, através do comando “ping”:
+docker container exec c1 ping -c4 172.17.0.3
+docker container exec c2 ping -c4 172.17.0.2
+
+Remova a execução dos containers c1 e c2, antes de continuar os próximos comandos:
+docker container rm -f c1 c2
+
+Como exemplo prático, vamos criar uma nova rede no Docker com o nome de “4labslan”:
+docker network create --driver bridge --subnet 172.19.0.0/16 4labslan
+docker network ls
+
+Para exibir informações detalhadas sobre a rede “4labslan”, execute o seguinte comando:
+docker network inspect 4labslan
+
+Inicie o primeiro container de nome c1 na rede “4labslan”, através da opção --net:
+docker container run -di --name=c1 -h servidor --net 4labslan debian
+
+Inicie o segundo container de nome c2 na rede “4labslan”, através da opção --net:
+docker container run -di --name=c2 -h cliente --net 4labslan debian
+
+Faça um teste de conectividade, usando o hostname de cada container na rede “dexterlan”:
+docker container exec c1 ping -c4 c2
+docker container exec c2 ping -c4 c1
+
+Remova a execução dos containers c1 e c2, antes de continuar os próximos comandos:
+docker container rm -f c1
+docker container rm -f c2
+
+Inicie novamente os dois containers na rede “4labslan”, utilizando IP fixo:
+docker container run -di --name=c1 -h servidor --net 4labslan --ip 172.19.0.111 debian
+docker container run -di --name=c2 -h cliente --net 4labslan --ip 172.19.0.112 debian
+
+Faça um teste de conectividade, usando o hostname de cada container na rede “4labslan”:
+docker container exec c1 ping -c4 172.19.0.112
+docker container exec c2 ping -c4 172.19.0.111
+
+Para desconectar um container de uma rede, use a opção “disconnect”:
+docker network disconnect 4labslan c2
+docker container exec c1 ping -c4 172.19.0.112
+
+Para conectar um container a uma rede, use a opção “connect”:
+docker network connect --ip 172.19.0.112 4labslan c2
+docker container exec c1 ping -c4 172.19.0.112
+
+Remova a execução dos containers c1 e c2, antes de continuar os próximos comandos:
+docker container rm -f c1
+docker container rm -f c2
+
+Para remover uma rede no Docker, usamos a opção “rm”, conforme o exemplo abaixo:
+docker network rm 4labslan
+docker network ls
+
+Para terminar vamos remover todos os containers existentes:
+docker container rm -f $(docker container ls -aq)

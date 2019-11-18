@@ -1,0 +1,26 @@
+Acesse a pasta 4541 e conecte via SSH na VM master:
+cd ~/k8s/4541
+vagrant ssh master
+
+
+Atualize a lista de pacotes e instale os pacotes para ativar o suporte a repositórios https:
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common vim
+
+
+Em seguida baixe a chave pública para configurar o repositório do Docker:
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+
+Use o seguinte comando para configurar o repositório estável para a distribuição Debian:
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+
+
+Use o seguinte comando para configurar o repositório estável para a distribuição Debian:
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+
+Adicione o usuário vagrant ao grupo "docker" e verifique a versão do Docker:
+sudo usermod -aG docker vagrant
+sudo docker version
+
+ATENÇÃO: Abra outros terminais para realizar o procedimento de instalação do Docker nas VMs Node 1 e Node 2.

@@ -1,0 +1,45 @@
+Acesse o endereço https://hub.docker.com/ e clique em Sign Up para criar uma conta:
+
+Confirme o cadastro em seu e-mail e logue no Docker Hub, através do link Sign In:
+
+Acesse a pasta 4541 e conecte via SSH na VM master:
+cd ~/k8s/4541
+vagrant ssh master
+
+Logue com o usuário e execute o comando para logar no Docker Hub:
+docker login -u <usuario_docker_hub> <TECLE ENTER>
+Password: <digite a senha>
+
+Verifique se um arquivo de autorização foi criado:
+cat .docker/config.json
+
+Para encerrar o login da conta do Docker Hub, execute o comando:
+docker logout
+
+Liste as imagens e verifique o histórico de comandos utilizados para sua construção: 
+docker image ls
+docker image history debian
+
+Para inspecionar uma imagem, utilizamos o seguinte comando:
+docker image inspect debian
+
+Antes de criar uma nova imagem, execute os seguintes comandos:
+docker container run -dit --name servidor-debian debian
+docker container exec servidor-debian apt-get update
+docker container exec servidor-debian apt-get install apache2 -y
+
+Para criar uma nova imagem a partir das alterações feitas em um container, execute os seguintes comandos:
+docker container commit servidor-debian servidor-web
+docker image ls
+
+Para inspecionar a nova imagem criada, a partir do container em execução:
+docker image inspect servidor-web
+
+Salve a imagem servidor-web que inclui o apache para um arquivo tar: 
+docker image save servidor-web > imagem-servidor-web.tar
+du -sh imagem-servidor-web.tar
+
+Remova o container servidor-debian e apenas a imagem servidor-web:
+docker container rm -f servidor-debian
+docker image rm -f servidor-web
+docker image ls

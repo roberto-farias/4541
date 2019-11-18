@@ -1,0 +1,39 @@
+Para mapear um volume no container com um diretório no host hospedeiro, use a flag “-v” do comando docker run:
+docker container run -di --name=servidor -h servidor -v /srv:/srv ubuntu
+docker container exec servidor df -Th
+
+Faça um teste copiando arquivos no host hospedeiro, e verifique se o conteúdo é mapeado no volume do container:
+docker container exec servidor ls /srv
+sudo cp /etc/*.conf /srv
+docker container exec servidor ls /srv
+
+Remova a execução de qualquer container servidor para continuar os próximos comandos:
+docker container rm -f servidor
+
+Para criar um volume no container, use a flag “-v” do comando docker run:
+docker container run -di --name servidor --hostname servidor -v /volume ubuntu 
+docker container ls
+
+Para exibir informações detalhadas sobre o volume, execute o seguinte comando:
+docker container inspect servidor | grep volume
+
+Veja que o Docker criou um hash representando o novo volume criado:
+docker volume ls
+docker volume inspect <hash><TECLE TAB PARA COMPLETAR>
+
+Veja também no interior do container o volume criado, através do comando docker exec: 
+docker container exec servidor df -Th
+docker container exec servidor ls volume
+
+Copie arquivos no host hospedeiro, depois veja se o conteúdo é mapeado no volume:
+docker volume ls
+sudo cp /etc/*.conf /var/lib/docker/volumes/<hash>/_data
+docker container exec servidor ls /volume
+
+Remova a execução de qualquer container servidor para continuar os próximos comandos:
+docker container rm -f servidor
+
+Para remover um volume no Docker, usamos a opção “rm”, conforme o exemplo abaixo:
+docker volume ls
+docker volume rm <hash><TECLE TAB PARA COMPLETAR>
+docker volume ls

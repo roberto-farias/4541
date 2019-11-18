@@ -1,0 +1,69 @@
+Acesse a pasta 4541 e conecte via SSH na VM master:
+cd ~/k8s/4541
+vagrant ssh master
+
+Baixe o binário do Docker Compose através do seguinte comando:
+sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+Para terminar adicione permissão de execução no binário e teste a instalação:
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+
+Antes de utilizar o Docker Composer, baixe a pasta com os arquivos do curso:
+git clone https://github.com/4linux/4541
+
+Em seguida vamos criar um diretório para armazenar o arquivo docker-compose:
+mkdir /home/vagrant/compose
+cd /home/vagrant/compose
+
+Copie o arquivo Dockerfile do nosso webserver para a pasta do compose:
+cp /home/vagrant/dockerfiles/webserver/Dockerfile .
+
+Copie e visualize o arquivo docker-compose.yml do nosso webserver para a pasta compose:
+cp /home/vagrant/4541/docker-compose.yml .
+cat docker-compose.yml
+version: '3'
+services:
+  webserver:
+    build: .
+    hostname: webserver
+    ports:
+      - 80:80
+    restart: always
+    
+Execute o docker compose com o comando:
+docker-compose up -d
+
+Podemos abrir pelo navegador o endereço http://172.27.11.10 e verificar se o nosso webserver está sendo executado:
+
+Para parar o container criado com o compose, utilize o comando:
+docker-compose stop
+docker container ls -a
+
+Para iniciar novamente um container criado com o compose, utilize o comando:
+docker-compose start
+docker container ls -a
+
+Para destruir um container criado com o compose, utilize o comando:
+docker-compose down
+docker container ls -a
+
+Crie a pasta html e o arquivo index.html:
+mkdir html
+echo "<h1> Website 4Labs </h1>" > html/index.html
+
+Edite o compose e adicione as seguintes linhas no final do arquivo, respeitando a identação:
+vim docker-compose.yml
+(...)
+    restart: always
+    volumes:
+      - $PWD/html:/var/www/html
+      
+Execute o compose e acesse o website http://172.27.11.10
+      
+Execute o compose:
+docker-compose up -d
+
+Destrua o compose criado:
+docker-compose down
+

@@ -1,0 +1,50 @@
+Copie e visualize o arquivo para o nosso serviço wordpress + mysql:
+cp /home/vagrant/4541/wordpress-compose.yml .
+cat wordpress-compose.yml
+version: '3'
+volumes:
+  mysql_db:
+services:
+  wordpress:
+    image: wordpress
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      
+Execute o compose:
+docker-compose -f wordpress-compose.yml up -d
+
+
+Verifique os containers criados:
+docker container ls 
+
+
+Acesse o endereço http://172.27.11.10 e configure o wordpress:
+
+Verifique os logs do container, através do comando docker-compose logs:
+docker-compose -f wordpress-compose.yml logs
+
+
+É possível visualizar os logs em tempo real, através do comando docker-compose logs -f:
+docker-compose -f wordpress-compose.yml logs -f
+<CTRL> + <C>
+
+Destrua o compose: 
+docker-compose -f wordpress-compose.yml down
+
+
+Verifique se o volume ainda existe:
+docker volume ls
+
+
+Execute o compose novamente:
+docker-compose -f wordpress-compose.yml up -d
+
+Destrua o compose: 
+docker-compose -f wordpress-compose.yml down
+
+Remova o volume criado:
+docker volume rm compose_mysql_db
+

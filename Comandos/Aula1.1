@@ -1,0 +1,23 @@
+Crie uma pasta em qualquer lugar do seu computador, dentro desta pasta colocaremos o arquivo do Vagrant responsável por configurar a infraestrutura necessária.
+
+A pasta se chamará k8s:
+cd ~/
+mkdir k8s
+
+Em seguida vamos baixar a pasta com os arquivos do curso:
+git clone https://github.com/4linux/4541
+
+Dentro desta pasta vamos utilizar o arquivo com a definição das nossas 4 máquinas:
+cat 4541/Vagrantfile
+
+Copie o arquivo Vagrantfile e execute o comando para levantar nossas máquinas virtuais:
+cp 4541/Vagrantfile .
+vagrant up
+
+Os nomes das máquinas estão descritos no arquivo Vagrantfile mas também é possível verificá-los com o comando:
+vagrant status
+
+Uma vez que as máquinas estejam funcionando, poderemos acessá-las executando um simples comando do Vagrant:
+vagrant ssh master
+
+

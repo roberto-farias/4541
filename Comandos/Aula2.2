@@ -1,0 +1,43 @@
+Acesse a pasta 4541 e conecte via SSH na VM master:
+cd ~/k8s/4541
+vagrant ssh master
+
+Vamos criar um diretório para armazenar o dockerfile:
+mkdir -p dockerfiles/echo-container
+cd dockerfiles/echo-container
+
+Crie um arquivo chamado Dockerfile:
+vim Dockerfile
+FROM alpine
+ENTRYPOINT ["echo"]
+CMD ["--help"]
+
+Para criar a imagem a partir do dockerfile, utilize o comando docker image build:
+docker image build -t echo-container .
+docker image ls
+
+Execute um container com a imagem criada:
+docker container run --rm -it echo-container
+
+Execute um container com a imagem criada, alterando o CMD:
+docker container run --rm -it echo-container Container DevOps
+
+Vamos criar um diretório para armazenar o dockerfile:
+mkdir /home/vagrant/dockerfiles/webserver
+cd /home/vagrant/dockerfiles/webserver
+
+Crie um arquivo chamado Dockerfile:
+vim Dockerfile
+FROM ubuntu
+RUN     apt update; \
+        apt install wget git apache2 -yq
+EXPOSE 80
+CMD ["apachectl", "-D", "FOREGROUND"]
+
+Para criar a imagem a partir do dockerfile, utilize o comando 'docker image build':
+docker image build -t webserver .
+docker image ls
+
+Para terminar remova todos os containers através do comando 'docker container rm':
+docker container rm -f $(docker container ls -qa)
+docker container ls
