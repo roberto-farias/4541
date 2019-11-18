@@ -1,0 +1,71 @@
+Acesse a pasta 4541 e conecte via SSH na VM master:
+cd ~/k8s/4541
+vagrant ssh master
+
+Para visualizar informações do ambiente, execute o comando:
+docker system info
+
+Para listar containers, imagens e redes no Docker, execute os comandos:
+docker container ls
+docker image ls
+docker network ls
+
+Para listar containers, imagens e redes no Docker, execute os comandos:
+docker container ls
+docker image ls
+docker network ls
+
+Para efetuar o download de uma imagem, utilize o comando docker image pull: 
+docker image pull debian
+
+Para executar um container, utilize o comando docker container run:
+docker container run -dit --name primeiro --hostname primeiro debian
+
+Para executar um container, utilize o comando docker container run:
+docker container run -dit --name primeiro --hostname primeiro debian
+
+Para se conectar ao container em execução, execute o seguinte comando:
+docker container attach primeiro
+
+Execute alguns comandos no container:
+ip -c a
+hostname
+cat /etc/hosts
+exit
+
+Vamos listar os containers: 
+docker container ls -a
+
+Inicie o container novamente e conecte-se ao mesmo:
+docker container start primeiro
+docker container attach primeiro
+
+Utilize a sequência de teclas para desconectar do container, sem que ele seja parado:
+<CTRL> + <P> <Q>
+
+Vamos listar os containers: 
+docker container ls -a
+
+Note que agora o container ainda está em execução, isto ocorre devido a utilização do Read escape Sequence.
+
+Para verificar os logs do container, utilize o comando:
+docker container logs primeiro
+
+Pare e remova o container, após isto, verifique os containers existentes:
+docker container rm -f primeiro
+docker container ls -a
+
+Vamos executar um container:
+docker container run -dit --name c1 --hostname c1 debian
+docker container ls
+
+Vamos criar um arquivo e enviar para o container c1:
+echo "Arquivo de teste" > /tmp/arquivo 
+docker container cp /tmp/arquivo c1:/tmp
+
+Liste o arquivo e leia o conteúdo dentro do container:
+docker container exec c1 ls /tmp
+docker container exec c1 cat /tmp/arquivo
+
+
+
