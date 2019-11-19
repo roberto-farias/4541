@@ -1,0 +1,64 @@
+sudo kubeadm --help
+
+Baixar imagens kubernetes
+sudo kubeadm config images pull
+
+Configurar cluster Kubernetes
+sudo kubeadm init --apiserver-advertise-address=172.27.11.10 --pod-network-cidr=10.244.0.0/16
+exit
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Comando kubeadmin
+
+O kubeadm é uma ferramenta CLI que instala e configura os vários componentes de um cluster de maneira padrão. O subcomando init executa primeiro uma série de pré-verificações, para garantir que a máquina esteja pronta para executar o Kubernetes. Esses pré-controles, expõem avisos e saem sem erros.
+
+A opção --pod-network-cidr especifica a sub-rede privada, da qual os IPs do pod serão atribuídos.
+
+
+Descrição dos comandos
+
+O kubectl é uma ferramenta CLI usada para emitir comandos para o cluster, através do seu servidor de API. O subcomando get exibe uma tabela com as informações mais importantes sobre os recursos especificados.
+
+Descrição dos comandos
+
+Ao utilizar o subcomando get, você verá apenas resultados do namespace default e/ou seu namespace atual, a menos que a flag -n seja utilizada.
+
+Em nosso exemplo, estamos listando Pods, Deployments e Serviços do namespace kube-system. Para listar recursos de todos os namespaces, utilize a opção --all-namespaces. 
+Exemplo:
+kubectl get pods --all-namespaces
+
+
+kubectl --help 
+kubectl get namespaces
+kubectl get pods
+kubectl get deployments
+
+kubectl get services
+kubectl get pods -n kube-system
+kubectl get deployments -n kube-system
+kubectl get services -n kube-system
+
+Realize o download do arquivo calico.yaml através do seguinte comando:
+wget https://docs.projectcalico.org/v3.9/manifests/calico.yaml
+
+Altere o endereço de rede e aplique as configurações da rede Calico no cluster:
+sed -i 's?192.168.0.0/16?10.244.0.0/16?g' calico.yaml
+kubectl apply -f calico.yaml
+
+Verifique se os containers da rede Calico estão presentes no Cluster Kubernetes:
+kubectl get pods -n kube-system
+
+
+Rede Calico
+
+O Calico permite a política de rede nos clusters do Kubernetes em toda a nuvem. O Calico funciona em todos os lugares - em todos os principais provedores de nuvem pública e em nuvem privada também.
+
+O Calico usa uma malha de rede IP pura para fornecer rede de alto desempenho, e seu mecanismo de política testado em batalha, reforça a política de rede de alto nível, que é voltada para a intenção. Juntos, o Calico e o Kubernetes fornecem uma plataforma nativa e segura na nuvem, que pode dimensionar sua infraestrutura para centenas de milhares de cargas de trabalho.
+
+
+
+
+
