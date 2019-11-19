@@ -19,7 +19,6 @@ kubeadmin token create: Criar um token de bootstrap no servidor;
 --ttl 1m: A duração antes do token é automaticamente excluída (por exemplo, 1s, 2m, 3h). Se definido como '0', o token nunca expirará (padrão 24h0m0s);
 kubeadmin token list: Lista os tokens de bootstrap no servidor.
 
-Slide 06
 
 TK=$(sudo kubeadm token list | grep Teste | awk -F" " '{print $1}')
 echo $TK
@@ -27,17 +26,13 @@ echo $TK
 sudo kubeadm token delete $TK
 sudo kubeadm token list
 
-Cole o comando copiado no slide anterior somente nas máquinas Node 1 e 2:
-sudo <COLAR COMANDO COPIADO>
-sudo kubeadm token list
-
-kubeadmin token delete: Remove um token de bootstrap no servidor.
+Crie um token com tempo de vida de 30 minutos e copie a saída do comando:
+sudo kubeadm token create --print-join-command --ttl 30m
 
 Cole o comando copiado no slide anterior somente nas máquinas Node 1 e 2:
 sudo <COLAR COMANDO COPIADO>
 
 kubectl get nodes
-
 kubectl get pods -n kube-system
 
 
