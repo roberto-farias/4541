@@ -1,0 +1,56 @@
+Acesse a pasta 4541 e conecte via SSH na VM master:
+cd ~/k8s/4541
+vagrant ssh master
+
+Execute os comandos para desabilitar o swap de uma só vez e que persista durante as reinicializações
+sudo sed -Ei 's/(.*swap.*)/#\1/g' /etc/fstab
+sudo swapoff -a
+
+Confirme se o Swap está desativado no servidor:
+sudo swapon -s
+
+Alterne para a conta do root e altere cgroupdriver para systemd:
+sudo su -
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "journald"
+}
+EOF
+
+Confirme a alteração reiniciando o serviço do Docker:
+systemctl restart docker
+
+O Debian 10 e as distribuições mais novas modificaram o comportamento do iptables que agora utiliza por padrão o nftables através de uma camada de compatibilidade. O kube-proxy responsável pelo roteamento não suporta esse tipo de configuração e acaba duplicando as rotas causando problemas.
+
+Precisaremos modificar o iptables para se comportar do modo “legacy”:
+update-alternatives --set iptables /usr/sbin/iptables-legacy
+update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives --set arptables /usr/sbin/arptables-legacy
+update-alternatives --set ebtables /usr/sbin/ebtables-legacy
+
+
+Baixe a chave pública para configurar o repositório do Kubernetes:
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+Use o seguinte comando para configurar o repositório estável para a distribuição Debian:
+echo 'deb https://apt.kubernetes.io/ kubernetes-xenial main' > /etc/apt/sources.list.d/kubernetes.list
+
+Em seguida, atualize a lista de pacotes:
+apt-get update
+
+Instale o Kubernetes na versão 1.15.1, a partir do seguinte comando:
+apt install -y kubelet=1.15.1-00 kubeadm=1.15.1-00 kubectl=1.15.1-00
+apt-mark hold kubelet kubeadm kubectl
+
+Verifique qual é a versão do kubeadm que esta instalada:
+kubeadm version
+
+ATENÇÃO: Abra outros terminais para realizar o procedimento de instalação do Kubernetes nas VMs Node 1 e Node 2.
+ 
+Precisaremos fazer mais um pequeno ajuste no serviço do kubelet - responsável por levantar os contêineres base do cluster - pois estamos utilizando o Vagrant e existe mais de uma interface de rede em nossa máquina. 
+ 
+Vamos configurar o kubelet para utilizar um endereço IP específico:
+echo "KUBELET_EXTRA_ARGS='--node-ip=172.27.11.10'" > /etc/default/kubelet
+
+Obs: Você precisará executar estes comandos em todas as máquinas do cluster, e lembre-se de trocar o final do IP para 20 e 30 ao executar este último comando.
