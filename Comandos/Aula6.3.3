@@ -1,0 +1,45 @@
+cd /tmp
+
+export VERSION=v1.15.6
+export ARCH=amd64
+curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubeadm > kubeadm
+
+sudo install -o root -g root -m 0755 ./kubeadm /usr/bin/kubeadm
+sudo kubeadm version
+
+sudo kubeadm upgrade plan
+
+sudo kubeadm upgrade apply v1.15.6
+
+
+Descrição dos comandos
+
+kubeadm upgrade plain: Verifica quais versões estão disponíveis para atualizar e validar se seu cluster atual é atualizável;
+kubeadm upgrade apply: Atualiza o cluster do Kubernetes para a versão especificada.
+
+curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubelet > kubelet
+sudo install -o root -g root -m 0755 ./kubelet /usr/bin/kubelet
+sudo systemctl restart kubelet
+
+curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubectl > kubectl
+sudo install -o root -g root -m 0755 ./kubectl /usr/bin/kubectl
+
+export VERSION=v1.15.6
+export ARCH=amd64
+
+curl -sSL \
+https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubectl \
+> kubectl
+
+sudo install -o root -g root -m 0755 ./kubectl /usr/bin/kubectl
+
+curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubelet > kubelet
+sudo install -o root -g root -m 0755 ./kubelet /usr/bin/kubelet
+sudo systemctl restart kubelet
+
+kubectl get nodes
+
+kubectl get pods -n kube-system
+
+
+

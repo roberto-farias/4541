@@ -1,0 +1,110 @@
+Slide 07
+
+Ferramenta etcdctl
+
+O etcdctl é um cliente de linha de comando para o etcd. Certifique-se de definir a variável de ambiente ETCDCTL_API=3.
+
+Para obter o arquivo utilizado em nosso exemplo, acesse o seguinte link:
+https://github.com/coreos/etcd/releases/download/v3.3.13/etcd-v3.3.13-linux-amd64.tar.gz
+
+
+sudo su -
+
+
+Logue na VM master e alterne para a conta do usuário root:
+sudo su -
+
+Armazene nas variáveis ETCD e URL a versão e endereço da ferramenta etcd:
+ETCD=v3.3.17
+URL=https://storage.googleapis.com/etcd
+
+Realize o download do binário do etcd através do comando curl:
+curl -L ${URL}/${ETCD}/etcd-${ETCD}-linux-amd64.tar.gz -o etcd-${ETCD}-linux-amd64.tar.gz
+
+Descompacte o arquivo etcd, através do comando TAR:
+ls
+tar xvf etcd-v3.3<TECLE TAB>
+
+Mova os binários do etcd para o diretório /usr/local/bin e declare a versão do API:
+mv etcd-v3.3<TECLE TAB>/etcd* /usr/local/bin/
+export ETCDCTL_API=3
+
+etcdctl snapshot save --help
+
+etcdctl snapshot save snapshot.db \
+   --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+    --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+    --key=/etc/kubernetes/pki/etcd/healthcheck-client.key
+
+etcdctl --write-out=table snapshot status snapshot.db
+
+
+Descrição dos comandos
+
+etcdctl snapshot save: Grava um snapshot pontual do banco de dados backend do etcd em um arquivo;
+--cacert: Arquivo de autoridade de certificação TLS para cluster de destino;
+--cert: Arquivo de certificado TLS para cluster de destino;
+--key: Arquivo de chave TLS para cluster de destino;
+etcdctl --write-out=table snapshot status: Lista informações sobre um determinado arquivo instantâneo de banco de dados de back-end.
+
+mkdir -p /data/backup
+
+cp -r /etc/kubernetes /data/backup/kubernetes.bak
+
+exit
+kubectl get nodes
+
+kubectl delete node kube-node01.dexter.com.br
+kubectl delete node kube-node02.dexter.com.br
+
+kubectl get nodes
+
+sudo su -
+kubeadm reset
+[reset] Are you sure you want to proceed? [y/N]: y <TECLE ENTER>
+
+iptables -F
+iptables -t nat -F 
+iptables -t mangle -F
+iptables -X
+
+Descrição dos comandos
+
+kubeadm reset: Permite reverter quaisquer alterações feitas no host pelos comandos 'kubeadm init' ou 'kubeadm join';
+iptables -F: Exclui todas as regras em cadeia da tabela Filter;
+iptables -t nat -F: Exclui todas as regras em cadeia da tabela NAT;
+iptables -t mangle -F: Exclui todas as regras em cadeia da tabela Mangle;
+iptables -X: Exclui uma cadeia definida pelo usuário.
+
+
+Slide 14
+
+rm -rf /etc/kubernetes/*
+cp -r /data/backup/kubernetes.bak/* /etc/kubernetes/
+export ETCDCTL_API=3
+etcdctl snapshot restore snapshot.db
+
+Descrição dos comandos
+
+etcdctl snapshot restore: Cria um diretório de dados do etcd para um membro de cluster do etcd, a partir de um snapshot de banco de dados de backend e uma nova configuração de cluster.
+
+
+Slide 15
+
+rm -rf /var/lib/etcd/*
+mv default.etcd/member /var/lib/etcd/
+
+kubeadm init --apiserver-advertise-address=172.27.11.10 --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=all
+
+exit
+
+kubectl get nodes,pods -n kube-system
+
+
+
+
+
+
+
+
+
