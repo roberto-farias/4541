@@ -1,0 +1,82 @@
+Slide 05
+
+sudo kubeadm token create --help
+sudo kubeadm token create --print-join-command --ttl 1m --description="Teste"
+
+sudo kubeadm token list
+
+
+O que é um token de acesso mais exatamente?
+
+ É um Segredo no namespace do sistema kube do tipo "bootstrap.kubernetes.io/token";
+ Um token de bootstrap deve estar no formato "[a-z0-9] {6}. [A-z0-9] {16}". A parte anterior é o ID do token público, enquanto o último é o Token Secret e deve ser mantido privado em todas as circunstâncias!
+ O nome do Segredo deve ser chamado de "bootstrap-token- (token-id;
+
+Descrição dos comandos
+
+kubeadmin token create: Criar um token de bootstrap no servidor;
+--print-join-command: Em vez de imprimir apenas o token, exibe o comando completo 'kubeadm join', necessário para ingressar um node no Cluster usando o token;
+--ttl 1m: A duração antes do token é automaticamente excluída (por exemplo, 1s, 2m, 3h). Se definido como '0', o token nunca expirará (padrão 24h0m0s);
+kubeadmin token list: Lista os tokens de bootstrap no servidor.
+
+Slide 06
+
+TK=$(sudo kubeadm token list | grep Teste | awk -F" " '{print $1}')
+echo $TK
+
+sudo kubeadm token delete $TK
+sudo kubeadm token list
+
+Cole o comando copiado no slide anterior somente nas máquinas Node 1 e 2:
+sudo <COLAR COMANDO COPIADO>
+sudo kubeadm token list
+
+kubeadmin token delete: Remove um token de bootstrap no servidor.
+
+Cole o comando copiado no slide anterior somente nas máquinas Node 1 e 2:
+sudo <COLAR COMANDO COPIADO>
+
+kubectl get nodes
+
+kubectl get pods -n kube-system
+
+
+Ingressar novos Nodes no Cluster
+
+Ao ingressar um node em um cluster, precisamos estabelecer confiança bidirecional. Isso é dividido em descoberta (com o nó confiando no plano de controle do Kubernetes) e na inicialização do TLS (com o plano de controle do Kubernetes, confiando no nó);
+Existem dois esquemas principais para a descoberta. A primeira é usar um token compartilhado junto com o endereço IP do servidor da API. A segunda é fornecer um arquivo,  um subconjunto do arquivo kubeconfig padrão. Este arquivo pode ser um arquivo local ou baixado por meio de um URL HTTPS.
+
+Descrição dos comandos
+
+kubeadmin join: Permite ingressar uma máquina a um Cluster Kubernetes;
+--token string: Define o token de descoberta e tls-bootstrap-token, quando esses valores não forem fornecidos;
+--discovery-token-ca-cert-hash strings: Para detecção baseada em token, valide se a chave pública da CA raiz corresponde a esse hash;
+--ignore-preflight-errors strings: Define uma lista de verificações, cujos erros serão mostrados como avisos;
+kubectl get nodes: Lista e exibe os estados de todas as máquinas que participam do cluster. 
+
+Slide 08
+
+kubectl get nodes
+
+kubectl describe node node1
+
+kubectl describe node node2
+
+kubectl delete node node2
+
+kubectl get nodes
+
+Descrição dos comandos
+
+kubectl describe node: Exibe informações sobre uma máquina que participa do cluster. 
+
+
+Descrição dos comandos
+
+kubectl delete node: Remove uma máquina que participa do cluster. 
+
+
+Execute o comando na máquina Node 2 para adicionar o nó ignorando erros:
+sudo <COLAR COMANDO COPIADO> --ignore-preflight-errors=all
+
+kubectl get nodes
