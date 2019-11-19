@@ -1,0 +1,105 @@
+Slide 05
+
+Secrets
+
+Para usar um segredo, um pod precisa referenciar o segredo. Um segredo pode ser usado com um pod de duas maneiras: 
+
+Como arquivos em um volume montado em um ou mais de seus contêineres;
+Usado pelo kubelet ao puxar imagens para o pod.
+
+Slide 06
+
+cat aula05/secrets/mysql-secret.yaml
+
+echo -n "suporte" | openssl enc -base64
+echo -n "4linux" | openssl enc -base64
+
+kubectl create -f aula05/secrets/mysql-secret.yaml
+
+
+Criando secrets
+
+Se você configurar o segredo por meio de um arquivo de manifesto (JSON ou YAML) que tenha os dados secretos codificados como base64, compartilhar esse arquivo ou registrá-lo em um repositório de origem significa que o segredo está comprometido. A codificação Base64 não é um método de criptografia e é considerada o mesmo que texto simples.
+
+
+Slide 07
+
+kubectl get secrets
+kubectl describe secret mysql-secrets
+
+cat aula05/secrets/mysql-deploy1.yaml
+kubectl create -f aula05/secrets/mysql-deploy1.yaml
+
+kubectl get all -l app=mysql
+
+
+secretKeyRef
+
+A variável de ambiente que consome a chave secreta, deve preencher o nome e a chave do secret em env [].secretKeyRef.
+
+Slide 08
+
+POD=$(kubectl get pods -o wide | grep mysql \
+ | awk -F" " '{print $1}')
+kubectl exec $POD env
+
+sudo apt install mariadb-client -y
+
+HOST=$(kubectl get pod -o wide | grep mysql \
+| awk -F" " '{print $6}')
+
+
+Slide 09
+
+mysql -h $HOST -u suporte -p4linux
+
+SHOW DATABASES;
+EXIT
+
+kubectl delete -f aula05/secrets/mysql-deploy1.yaml
+
+
+Slide 11
+
+Configmaps
+
+Os ConfigMaps não devem funcionar como substitutos de um arquivo de propriedades. ConfigMaps se destina a atuar como uma referência para vários arquivos de propriedades. Você pode pensar neles como uma forma de representar algo semelhante ao diretório /etc e aos arquivos contidos em um computador Linux. Um exemplo desse modelo, é a criação de volumes do Kubernetes a partir do ConfigMaps, onde cada item de dados no ConfigMap se torna um novo arquivo.
+
+
+Slide 12
+
+cat aula05/secrets/mysql-config.yaml
+
+kubectl create -f aula05/secrets/mysql-config.yaml
+
+kubectl get configmaps
+kubectl describe configmap mysql-config
+
+
+
+configMapKeyRef
+
+A variável de ambiente que consome a chave secreta, deve preencher o nome e a chave do configmap em env [].configMapKeyRef.
+
+
+Slide 13
+
+cat aula05/secrets/mysql-deploy2.yaml
+kubectl create -f aula05/secrets/mysql-deploy2.yaml
+
+kubectl get all -l app=mysql
+
+POD=$(kubectl get pods | grep mysql | awk -F" " '{print $1}')
+kubectl exec $POD env
+
+Slide 14
+
+HOST=$(kubectl get pod -o wide | grep mysql \
+| awk -F" " '{print $6}')
+
+mysql -h $HOST -u helpdesk -pdevops
+EXIT
+
+kubectl delete -f aula05/secrets/mysql-deploy2.yaml
+
+
