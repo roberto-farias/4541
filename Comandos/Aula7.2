@@ -1,0 +1,52 @@
+Logue com usuário suporte e liste os arquivos YAML na pasta pods:
+ls 4541/aula03/pods
+
+Visualize o conteúdo de cada arquivo e acompanhe a explicação em Notas:
+cat 4541/aula03/pods/pod1.yaml
+cat 4541/aula03/pods/pod2.yaml
+
+Para criar um Pod a partir de cada arquivo YAML, execute o comando kubectl apply:
+kubectl apply -f 4541/aula03/pods/pod1.yaml
+kubectl apply -f 4541/aula03/pods/pod2.yaml
+
+Para criar um Pod a partir de um arquivo YAML remoto, execute o seguinte comando:
+kubectl create -f https://k8s.io/examples/admin/dns/busybox.yaml
+
+Verifique se os três Pods estão sendo executados no Cluster:
+kubectl get pods -o wide
+
+Podemos visualizar a execução de um Pod, utilizando a flag -o yaml:
+kubectl get pod busybox -o yaml
+
+Visualize a resolução de DNS para o nome do serviço kubernetes:
+kubectl exec -ti busybox -- nslookup kubernetes
+kubectl exec -ti busybox -- nslookup kube-dns.kube-system.svc.cluster.local
+
+Verifique se o serviço Kube-dns está sendo executado no namespace kube-system:
+kubectl get service -n kube-system | grep dns
+
+Liste os Pods e anote o IP do pod1 e pod2:
+kubectl get pods -o wide
+
+Visualize a resolução de DNS para o nome do Pod1:
+kubectl exec -ti busybox -- nslookup <IP-DO-POD-POD1>.default.pod.cluster.local
+
+Visualize a resolução de DNS para o nome do Pod2:
+kubectl exec -ti busybox -- nslookup <IP-DO-POD-POD2>.default.pod.cluster.local
+
+Liste os Pods e anote o IP do pod1 e pod2:
+kubectl get pods -o wide
+
+Teste a conectividade via DNS do Pod2 para o Pod1:
+kubectl exec -ti pod2 -- ping -c4 <IP-DO-POD-POD1>.default.pod.cluster.local
+
+Teste a conectividade via DNS do Pod1 para o Pod2:
+kubectl exec -ti pod1 -- ping -c4 <IP-DO-POD-POD2>.default.pod.cluster.local
+
+Para terminar, remova a execução dos Pods:
+kubectl delete -f 4541/aula03/pods/pod1.yaml
+kubectl delete -f 4541/aula03/pods/pod2.yaml
+
+Não esqueça de remover a execução do Pod busybox:
+kubectl delete -f https://k8s.io/examples/admin/dns/busybox.yaml
+
