@@ -1,0 +1,56 @@
+Para começar, liste os Nodes no Cluster Kubernetes:
+kubectl get 
+
+Defina o rótulo cloud=AWS para o Node 01 e cloud=AZURE para o Node 02:
+kubectl label node node1 cloud=AWS
+kubectl label node node2 cloud=AZURE
+
+Para exibir os labels, utilize a flag --show-labels na lista dos Nodes:
+kubectl get node node1 --show-labels
+kubectl get node node2 --show-labels
+
+Visualize e aplique a configuração do arquivo nginx-deploy.yaml:
+cat 4541/aula04/labels/nginx-deploy.yaml 
+kubectl create -f 4541/aula04/labels/nginx-deploy.yaml
+
+Verifique se o nginx-deploy2 está alocado no Node 2 e o nginx-deploy1 no Node 1:
+kubectl get pods -o wide | grep nginx-deploy
+
+Edite o deploy nginx-deploy1 para alterar o label cloud=AZURE para cloud=AWS:
+kubectl edit deploy nginx-deploy1
+      nodeSelector:
+        cloud: AWS
+        
+Verifique se o nginx-deploy1 foi alocado no Node 1:
+kubectl get pods -o wide | grep nginx-deploy
+
+Edite o deploy nginx-deploy2 para alterar o label cloud=AWS para cloud=AZURE:
+kubectl edit deploy nginx-deploy2
+      nodeSelector:
+        cloud: AZURE
+        
+Após verificar as mudanças conforme o Label, remova os Deploy e Pods:
+kubectl get pods -o wide
+kubectl delete -f 4541/aula04/labels/nginx-deploy.yaml
+
+Visualize e aplique a configuração do arquivo nginx-deploy.yaml:
+cat 4541/aula04/labels/nginx-replication.yaml 
+kubectl create -f 4541/aula04/labels/nginx-replication.yaml
+      
+Verifique que o Node 1 possui mais réplicas (peso 80) e o Node 2 menos (peso 20):
+kubectl get pod -o wide | grep nginx-deploy
+
+Edite o deploy nginx-deploy para alterar o peso 80 para 10 e o peso 20 para 90:
+kubectl edit deploy nginx-deploy
+
+                - AWS
+            Weight: 10
+
+                - AZURE
+            weight: 90
+            
+Verifique que o Node 02 possui mais réplicas (peso 90) e o Node 01 menos (peso 10):
+kubectl get pod -o wide | grep nginx-deploy
+
+Após verificar as mudanças conforme o Label, remova os Deploy e Pods:
+kubectl delete -f 4541/aula04/labels/nginx-replication.yaml 
