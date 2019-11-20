@@ -54,8 +54,8 @@ cp -r /etc/kubernetes /data/backup/kubernetes.bak
 exit
 kubectl get nodes
 
-kubectl delete node kube-node01.dexter.com.br
-kubectl delete node kube-node02.dexter.com.br
+kubectl delete node node1
+kubectl delete node node2
 
 kubectl get nodes
 
