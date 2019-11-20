@@ -1,0 +1,67 @@
+Para começar, crie um namespace de nome dexter-limits:
+kubectl create namespace dexter-limits
+
+Visualize e aplique a configuração do arquivo dexter-limit-range-1.yaml:
+cat 4541/aula04/limits/dexter-limit-range-1.yaml
+kubectl create -f 4541/aula04/limits/dexter-limit-range-1.yaml
+
+Verifique se as solicitações e limites padrão foram aplicadas no Cluster:
+kubectl describe limitrange -n dexter-limits
+
+Vamos testar o uso de limites, executando um Pod com limite de 512MB de memória:
+cat 4541/aula04/limits/limited-pod1.yaml
+kubectl create -f 4541/aula04/limits/limited-pod1.yaml
+
+Visualize as informações do Pod em execução, para validar o limite de memória aplicada:
+kubectl describe pod limited-pod1 -n dexter-limits | grep Limits -A 5
+
+É possível verificar o limite aplicado, visualizando as informações do Node 1:
+$ kubectl describe node node1 | grep limited
+
+Vamos testar o uso de resources, executando um Pod com solicitação de memória:
+cat 4541/aula04/limits/limited-pod2.yaml
+kubectl create -f 4541/aula04/limits/limited-pod2.yaml
+
+Visualize as informações do Pod em execução, para validar a solicitação de memória:
+kubectl describe pod limited-pod2 -n dexter-limits | grep Limits -A 5
+
+É possível verificar a solicitação aplicada, visualizando as informações do Node 1:
+kubectl describe node node1 | grep limited
+
+Vamos testar o que acontece quando o Pod ultrapassa recursos de um Node:
+cat 4541/aula04/limits/limited-pod3.yaml
+kubectl create -f 4541/aula04/limits/limited-pod3.yaml
+
+Liste os Pods e verifique que o pod limited-pod3 aparece com seu status Pending:
+kubectl get pod -o wide -n dexter-limits
+
+Verifique que não é possível realizar o agendamento, devido a falta de recursos do Node:
+kubectl describe pod limited-pod3 -n dexter-limits
+
+Para terminar, remova os Pods utilizando os testes de recursos e limites:
+kubectl delete -f 4541/aula04/limits/limited-pod1.yaml
+kubectl delete -f 4541/aula04/limits/limited-pod2.yaml
+kubectl delete -f 4541/aula04/limits/limited-pod3.yaml
+kubectl delete -f 4541/aula04/limits/dexter-limit-range-1.yaml
+
+Visualize e crie a configuração de limites máximos e mínimos:
+cat 4541/aula04/limits/dexter-limit-range-2.yaml
+kubectl create -f 4541/aula04/limits/dexter-limit-range-2.yaml
+
+Vamos testar o uso de limites máximos e mínimos, executando um Pod:
+cat 4541/aula04/limits/limited-pod4.yaml
+kubectl create -f 4541/aula04/limits/limited-pod4.yaml
+
+Visualize as informações do Pod em execução, para validar os limites aplicados:
+kubectl describe pod limited-pod4 -n dexter-limits | grep Limits -A 5
+
+É possível verificar o limite aplicado, visualizando as informações do Node 1:
+kubectl describe node node1 | grep limited
+
+Vamos testar o que acontece quando o Pod ultrapassa recursos de um Node:
+cat 4541/aula04/limits/limited-pod5.yaml
+kubectl create -f 4541/aula04/limits/limited-pod5.yaml
+
+Para terminar, remova os Pods, utilizando os testes de recursos e limites:
+kubectl delete -f 4541/aula04/limits/limited-pod4.yaml
+kubectl delete -f 4541/aula04/limits/dexter-limit-range-2.yaml
