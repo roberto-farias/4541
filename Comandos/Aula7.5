@@ -1,83 +1,76 @@
 Acesse a pasta 4541 e conecte via SSH na VM master:
-$ cd ~/k8s/4541
-$ vagrant ssh master
+cd ~/k8s/4541
+vagrant ssh master
 
 Atualize a lista de pacotes e instale o pacote para ativar o uso de aplicações Snaps:
-$ sudo apt update
-$ sudo apt install snapd -y
+sudo apt update
+sudo apt install snapd -y
 
 Instale o helm através do comando snap:
-$ sudo snap install helm --classic
+sudo snap install helm --classic
 
 Deslogue da VM master e conecte novamente para atualizar os PATHS:
-$ exit
-$ vagrant ssh master
+exit
+vagrant ssh master
 
 Instale o Tiller no seu Cluster Kubernetes e configure a variável $HELM_HOME:
-$ helm init
+helm init
 
 Após a instalação, verifique se o container tiller-deploy está em execução no Cluster:
-$ kubectl get pod -n kube-system | rep tiller
+kubectl get pod -n kube-system | rep tiller
 
 Crie um usuário de nome “tiller” no namespace kube-system:
-$ kubectl create serviceaccount --namespace kube-system tiller
+kubectl create serviceaccount --namespace kube-system tiller
 
 Crie uma Role para conceder acesso ao usuário tittler no papel de administrador do Cluster:
-$ kubectl create clusterrolebinding tiller-cluster-rule \
---clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 
 Aplique um patch para conceder acesso ao usuário tittler no Deploy tiller-deploy:
-$ kubectl patch deploy --namespace kube-system tiller-deploy \
--p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 
 Verifique se na lista de pacotes do Helm, a string aparece na pesquisa:
-$ helm search ingress
+helm search ingress
 
 Instale o nginx-ingress no namespace kube-system, através do comando helm install:
-$ helm install stable/nginx-ingress --name nginx-ingress \
- --namespace kube-system
+helm install stable/nginx-ingress --name nginx-ingress --namespace kube-system
  
- Após a instalação, verifique os novos componentes criados no namespace kube-system:
-$ kubectl get pod,deployment,svc,secret,configmap,sa,role,\
-rolebinding -n kube-system | grep ingress
-$ kubectl get role,rolebinding -n kube-system | grep ingress
+Após a instalação, verifique os novos componentes criados no namespace kube-system:
+kubectl get pod,deployment,svc,secret,configmap,sa,role,rolebinding -n kube-system | grep ingress
+kubectl get role,rolebinding -n kube-system | grep ingress
 
 Para começar, visualize em detalhes as informações do confimap nginx-ingress:
-$ kubectl describe configmap ingress-controller-leader-nginx \
--n kube-system
+kubectl describe configmap ingress-controller-leader-nginx -n kube-system
 
 Adicione um novo recurso, aplicando as configurações do arquivo nginx-ingress-config.yaml:
-$ cat 4541/aula03/install-ingress/nginx-ingress-config.yaml
-$ kubectl apply -f 4541/aula03/install-ingress/nginx-ingress-config.yaml
+cat 4541/aula03/install-ingress/nginx-ingress-config.yaml
+kubectl apply -f 4541/aula03/install-ingress/nginx-ingress-config.yaml
 
 Verifique se o recurso use-proxy-protocol foi adicionado no confimap do nginx-ingress:
-$ kubectl describe configmap ingress-controller-leader-nginx \
--n kube-system
+kubectl describe configmap ingress-controller-leader-nginx -n kube-system
 
 Para começar, visualize em detalhes as informações do serviço nginx-ingress:
-$ kubectl describe service nginx-ingress-controller -n kube-system
+kubectl describe service nginx-ingress-controller -n kube-system
 
 Altere as portas do NodePort, aplicando as configurações em nginx-ingress-nodeport.yaml:
-$ cat 4541/aula03/install-ingress/nginx-ingress-nodeport.yaml
-$ kubectl apply -f 4541/aula03/install-ingress/nginx-ingress-nodeport.yaml
+cat 4541/aula03/install-ingress/nginx-ingress-nodeport.yaml
+kubectl apply -f 4541/aula03/install-ingress/nginx-ingress-nodeport.yaml
 
 Verifique se as portas do NodePort estão setadas para 31080 e 31443:
-$ kubectl describe service nginx-ingress-controller -n kube-system
+kubectl describe service nginx-ingress-controller -n kube-system
 
 Acesse a pasta 4541 e conecte via SSH na VM balancer:
-$ cd ~/k8s/4541
-$ vagrant ssh balancer
+cd ~/k8s/4541
+vagrant ssh balancer
 
 Atualize a lista de pacotes e instale o HA Proxy e o Git:
-$ sudo apt-get update
-$ sudo apt-get install -y haproxy git
+sudo apt-get update
+sudo apt-get install -y haproxy git
 
 Obtenha a pasta os arquivos de configuração do curso:
-$ git clone https://github.com/4linux/4541
+git clone https://github.com/4linux/4541
 
 Copie de configuração modelo do HA Proxy e reinicie o serviço para aplicas as mudanças:
-$ sudo cp 4541/haproxy.cfg /etc/haproxy/
-$ sudo systemctl restart haproxy
+sudo cp 4541/haproxy.cfg /etc/haproxy/
+sudo systemctl restart haproxy
 
-$ sudo cat /etc/haproxy/haproxy.cfg
-
+sudo cat /etc/haproxy/haproxy.cfg
