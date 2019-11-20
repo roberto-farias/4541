@@ -49,13 +49,13 @@ kubectl get endpoints
 
 Para acessar a aplicação internamente, execute o comando curl nos seguintes endereços:
 curl http://127.0.0.1:$NodePort
-curl http://172.127.11.10:$NodePort
+curl http://172.27.11.10:$NodePort
 
 Para acessar a aplicação de forma externa, verifique em qual Node o Pod foi alocado:
-$ kubectl get pods -o wide
+kubectl get pods -o wide
 
 Acesse a aplicação no navegador, informando o IP do Node e a porta gerada pelo serviço:
-http://http://172.127.11.1x:$NodePort
+http://http://172.27.11.1x:$NodePort
 
 Para deletar e listar um Serviço no cluster, execute os seguintes comandos:
 kubectl delete service nginx
