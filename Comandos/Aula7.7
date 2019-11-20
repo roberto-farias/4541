@@ -1,0 +1,38 @@
+Crie uma chave de 2048 bits e um certificado autoassinado, através do comando openssl:
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx1-tls.key -out nginx1-tls.crt -subj "/CN=nginx1.dexter.com.br/O=DexterCourierMatriz/OU=DevOps"
+
+Crie uma segunda chave e certificado autoassinado para um segundo site:
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx2-tls.key -out nginx2-tls.crt -subj "/CN=nginx2.dexter.com.br/O=DexterCourierFilial/OU=BigData"
+
+Crie um secret para armazenar a chave nginx1-tls.key e o certificado nginx1-tls.crt:
+kubectl create secret tls certificado1-nginx-tls --key nginx1-tls.key --cert nginx1-tls.crt
+
+Crie um secret para armazenar a chave nginx2-tls.key e o certificado nginx2-tls.crt:
+kubectl create secret tls certificado2-nginx-tls --key nginx2-tls.key --cert nginx2-tls.crt
+
+Liste os secrets para validar os comandos anteriores:
+kubectl get secrets
+
+Visualize e aplique o conteúdo do arquivo deploy-nginx para criar Deploy e Serviço:
+cat 4541/aula03/ingress/tls/deploy-nginx.yaml 
+kubectl create -f 4541/aula03/ingress/tls/deploy-nginx.yaml
+
+Visualize e execute o script web-nginx.sh que configura o arquivo index.html de cada Pod:
+cat 4541/aula03/ingress/web-nginx.sh
+bash 4541/aula03/ingress/web-nginx.sh
+
+Visualize e aplique o arquivo ingress-tls-nginx.yaml para criar um Ingress na porta 443:
+cat 4541/aula03/ingress/tls/ingress-tls-nginx.yaml
+kubectl create -f 4541/aula03/ingress/tls/ingress-tls-nginx.yaml 
+
+Mostre detalhes dos Ingress que criamos no slide anterior:
+kubectl describe ingress ingress1-tls-nginx
+kubectl describe ingress ingress2-tls-nginx
+
+Teste o acesso aos domínios na porta 443:
+curl -kivL https://nginx1.dexter.com.br
+curl -kivL https://nginx2.dexter.com.br
+
+Para terminar, remova o Deploy, Service e Ingress na porta 443:
+kubectl delete -f 4541/aula03/ingress/tls
+
