@@ -1,0 +1,37 @@
+Para começar, liste os Daemonsets de todos os namespaces no Cluster Kubernetes:
+kubectl get daemonset --all-namespaces
+
+Para exibir informações detalhadas de um Damonset, execute o seguinte comando:
+kubectl describe daemonset calico-node -n kube-system
+
+Verifique em qual Nó do Cluster os Daemonsets está em execução:
+kubectl get pod -n kube-system -o wide | grep kube-proxy
+kubectl get pod -n kube-system -o wide | grep calico-node
+kubectl get pod -n kube-system -o wide | grep nginx
+
+Visualize e aplique a configuração do arquivo node_exporter.yaml:
+cat 4541/aula04/daemonset/node_exporter.yaml
+kubectl create -f 4541/aula04/daemonset/node_exporter.yaml
+
+Verifique que o Daemonset não está em execução em nenhum Nó do Cluster:
+kubectl get daemonset node-exporter
+
+Para visualizar informações sobre o Daemonset, execute o seguinte comando:
+kubectl describe daemonset node-exporter
+
+Para executar o Daemonset no Node 1, adicione um Label que atenda suas configurações:
+kubectl label node node1 monitoring=prometheus
+
+Repita o comando de adição do Label no Node 2:
+kubectl label node node2 monitoring=prometheus
+
+Verifique que o Daemonset está em execução nos dois nós do Cluster:
+kubectl get pods -o wide
+
+Para sobrescrever um Label, desativando a execução do Daemonset, execute:
+$ kubectl label node node1 monitoring=zabbix --overwrite
+$ kubectl get pods -o wide
+
+Desative a execução do Daemonset também no Node 2:
+kubectl label node kube-node2 monitoring=zabbix --overwrite
+kubectl get pods -o wide
