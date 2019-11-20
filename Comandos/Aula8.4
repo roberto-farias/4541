@@ -1,0 +1,22 @@
+Para testar o uso de cotas, aplique as configurações do arquivo dexter-limits-range-3.yaml:
+cat 4541/aula04/limits/dexter-limit-range-3.yaml
+kubectl create -f 4541/aula04/limits/dexter-limit-range-3.yaml
+
+Verifique se as cotas de memória e CPU foram aplicadas no Cluster:
+kubectl describe resourcequota -n dexter-limits
+
+Vamos testar o uso de cotas, executando um Pod dentro das cotas permitidas:
+cat 4541/aula04/limits/limited-pod6.yaml 
+kubectl create -f 4541/aula04/limits/limited-pod6.yaml
+
+Verifique se após a execução do Pod, os valores na tabela de cotas foram atualizados:
+kubectl describe resourcequota -n dexter-limits
+
+Vamos testar o uso de cotas, executando um Pod e exercendo as cotas permitidas:
+cat 4541/aula04/limits/limited-pod7.yaml 
+kubectl create -f 4541/aula04/limits/limited-pod7.yaml
+
+Para terminar, remova os Pods utilizando os testes de cotas de recursos e limites:
+kubectl delete -f 4541/aula04/limits/limited-pod6.yaml
+kubectl delete -f 4541/aula04/limits/limited-pod7.yaml
+kubectl delete -f 4541/aula04/limits/dexter-limit-range-3.yaml
