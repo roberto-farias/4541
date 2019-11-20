@@ -1,0 +1,29 @@
+Liste todos os Pods em todos os namespaces:
+kubectl get pods --all-namespaces
+
+Em seguida, verifique qual é o IP de rede em que o nosso Cluster está configurado:
+kubectl describe node node1 | grep IPv4IPIPTunnelAddr
+
+Para testar a comunicação em rede, crie um Pod com a image Docker alpine:
+kubectl run pod1 --generator=run-pod/v1 --image=alpine --restart Never -- /bin/sleep 999999
+
+Crie um segundo Pod com a image Docker alpine:
+kubectl run pod2 --generator=run-pod/v1 --image=alpine --restart Never -- /bin/sleep 999999
+
+Liste os Pods informando em qual Node os containers estão em execução:
+kubectl get pods -o wide
+
+Confirme o IP em cada Pod, executando o comando ifconfig:
+kubectl exec -it pod1 -- ifconfig eth0
+kubectl exec -it pod2 -- ifconfig eth0
+
+Teste a conectividade entre os containers, através do comando ping em cada Pod:
+kubectl exec -it pod1 -- ping -c4 <IP_POD2>
+kubectl exec -it pod2 -- ping -c4 <IP_POD1>
+
+Feito os testes, remova os Pods através dos seguintes comandos:
+kubectl delete pod pod1
+kubectl delete pod pod2
+
+Confirme se os Pods foram removidos:
+kubectl get pods
