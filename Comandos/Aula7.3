@@ -27,3 +27,40 @@ kubectl delete pod pod2
 
 Confirme se os Pods foram removidos:
 kubectl get pods
+
+Para começar, crie um Deploy no Cluster através do seguinte comando:
+kubectl create deployment nginx --image=nginx
+
+Liste os Pods e Deploy no Cluster, através dos seguintes comandos
+kubectl get pods
+kubectl get deployments
+
+Crie um serviço do tipo NodePort para atender requisições na porta 80:
+kubectl expose deployment/nginx --type="NodePort" --port 80
+
+Liste os serviços para validar os comandos anteriores:
+kubectl get services
+
+Para exibir informações detalhadas sobre um serviço, execute o seguinte comando:
+kubectl describe service nginx
+
+Verifique em qual endereço o serviço criado enviará tráfego, listando endpoints no Cluster:
+kubectl get endpoints
+
+Para acessar a aplicação internamente, execute o comando curl nos seguintes endereços:
+curl http://127.0.0.1:$NodePort
+curl http://172.127.11.10:$NodePort
+
+Para acessar a aplicação de forma externa, verifique em qual Node o Pod foi alocado:
+$ kubectl get pods -o wide
+
+Acesse a aplicação no navegador, informando o IP do Node e a porta gerada pelo serviço:
+http://http://172.127.11.1x:$NodePort
+
+Para deletar e listar um Serviço no cluster, execute os seguintes comandos:
+kubectl delete service nginx
+kubectl get services
+
+Para deletar e listar um Deploy no cluster, execute os seguintes comandos:
+kubectl delete deployment nginx
+kubectl get deployments
