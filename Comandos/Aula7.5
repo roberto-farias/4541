@@ -17,9 +17,9 @@ Instale o Tiller no seu Cluster Kubernetes e configure a variável $HELM_HOME:
 helm init
 
 Após a instalação, verifique se o container tiller-deploy está em execução no Cluster:
-kubectl get pod -n kube-system | rep tiller
+kubectl get pod -n kube-system | grep tiller
 
-Crie um usuário de nome “tiller” no namespace kube-system:
+Crie um usuário de nome "tiller" no namespace kube-system:
 kubectl create serviceaccount --namespace kube-system tiller
 
 Crie uma Role para conceder acesso ao usuário tittler no papel de administrador do Cluster:
