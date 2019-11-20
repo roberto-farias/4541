@@ -1,0 +1,44 @@
+Crie um Deploy utilizando a imagem Docker nginx e em seguida crie 2 réplicas:
+kubectl create deployment nginx --image=nginx
+kubectl scale deployment/nginx --replicas=2
+
+Crie um serviço do tipo LoadBalancer para atender requisições na porta 80:
+kubectl expose deployment nginx --port 80 --target-port 80 --type LoadBalancer
+
+Liste os Pods, Deployments, Services e Replicaset, através do seguinte comando:
+kubectl get all
+
+Antes de testar o ambiente LoadBalancer, armazene na variável POD1 o nome do 1º Pod:
+POD1=$(kubectl get pod | grep nginx | awk -F" " '{print $1}' | head -1)
+echo $POD1
+
+Antes de testar o ambiente LoadBalancer, armazene na variável POD2 o nome do 2º Pod:
+POD2=$(kubectl get pod | grep nginx | awk -F" " '{print $1}' | tail -1)
+echo $POD2
+
+Crie o arquivo index.html e copie o mesmo para o Pod1:
+echo 'POD 1 - LoadBalancer' > index.html
+kubectl cp index.html $POD1:/usr/share/nginx/html/
+
+Crie o arquivo index.html e copie o mesmo para o Pod2:
+echo 'POD 2 - LoadBalancer' > index.html
+kubectl cp index.html $POD2:/usr/share/nginx/html/
+
+Liste o serviço nginx e verifique o tipo LoadBalancer:
+kubectl get service nginx
+
+Para exibir detalhes do serviço, execute o subcomando describe:
+kubectl describe service nginx
+
+Para testar o LoadBalancer, acesse várias vezes o IP do serviço (CLUSTER-IP) e veja a mudança do conteúdo da página entre os Pods:
+LB=$(kubectl get service | grep nginx | awk -F" " '{print $3}')
+curl http://$LB (10x)
+
+Remova os Pods e Deployments, através do seguinte comando:
+kubectl delete deployment nginx
+
+Remova o serviço LoadBalancer, através do seguinte comando:
+kubectl delete service nginx
+
+Liste os Pods, Deployments, Services e Replicaset, através do seguinte comando:
+kubectl get all
