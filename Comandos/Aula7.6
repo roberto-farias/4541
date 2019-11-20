@@ -1,0 +1,40 @@
+Visualize e aplique o conteúdo do arquivo deploy-nginx para criar Deploy e Serviço:
+cat 4541/aula03/ingress/http/deploy-nginx.yaml 
+kubectl create -f 4541/aula03/ingress/http/deploy-nginx.yaml 
+
+Visualize e aplique o arquivo ingress-nginx.yaml para criar um Ingress na porta 80:
+cat 4541/aula03/ingress/http/ingress-nginx.yaml 
+kubectl create -f 4541/aula03/ingress/http/ingress-nginx.yaml 
+
+Liste e mostre destalhes do Ingress de nome dexter-ingress:
+kubectl get ingress
+kubectl describe ingress dexter-ingress
+
+Teste o acesso ao domínio nginx.dexter.com.br e verifique se o conteúdo do Pod é mostrado:
+curl nginx.dexter.com.br
+
+Para terminar, remova o Deploy, Service e Ingress na porta 80:
+kubectl delete -f 4541/aula03/ingress/http
+
+Visualize e aplique o conteúdo do arquivo deploy-nginx para criar Deploy e Serviço:
+cat 4541/aula03/ingress/rewrite/deploy-nginx.yaml 
+kubectl create -f 4541/aula03/ingress/rewrite/deploy-nginx.yaml
+
+Visualize e execute o script web-nginx.sh que configura o arquivo index.html de cada Pod:
+cat 4541/aula03/ingress/web-nginx.sh
+bash 4541/aula03/ingress/web-nginx.sh
+
+Visualize e aplique o arquivo ingress-rewrite.yaml para criar um Ingress de redirecionamento:
+cat 4541/aula03/ingress/rewrite/ingress-rewrite.yaml
+kubectl create -f 4541/aula03/ingress/rewrite/ingress-rewrite.yaml 
+
+Liste e mostre destalhes do Ingress de nome ingress-rewrite:
+kubectl get ingress
+kubectl describe ingress ingress-rewrite
+
+Teste o acesso ao domínio nginx.dexter.com.br, alternando entre os paths /matrix e /filial:
+curl nginx.dexter.com.br/matriz
+curl nginx.dexter.com.br/filial
+
+Para terminar, remova o Deploy, Service e Ingress de redirecionamento:
+kubectl delete -f 4541/aula03/ingress/rewrite
