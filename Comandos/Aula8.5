@@ -1,0 +1,79 @@
+Para começar, verifique se o agendador padrão do Kubernetes está presente no Cluster:
+kubectl get pods -n kube-system
+
+Em seguida, visualize informações detalhadas do agendador padrão:
+kubectl describe pod -n kube-system kube-scheduler-master
+
+Permita novos schedulers no Cluster, adicionando regras na Role system:kube-scheduler:
+kubectl edit clusterrole system:kube-scheduler
+...
+<ADICIONAR NO FINAL>
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - watch
+  - list
+  - get
+  
+Visualize as configurações para adicionar dois novos schedules no Cluster:
+cat 4541/aula04/schedulers/kube1-scheduler.yaml 
+cat 4541/aula04/schedulers/kube2-scheduler.yaml
+
+Instale o primeiro scheduler e verifique se o mesmo está presente no Cluster:
+kubectl create -f 4541/aula04/schedulers/kube1-scheduler.yaml
+kubectl get pod -o wide -n kube-system | grep dexter-scheduler1
+
+Instale o segundo scheduler e verifique se o mesmo está presente no Cluster:
+kubectl create -f 4541/aula04/schedulers/kube2-scheduler.yaml
+kubectl get pod -o wide -n kube-system | grep dexter-scheduler2
+
+Para exibir os logs sobre o primeiro scheduler, execute os seguintes comandos:
+POD1=$(kubectl get pod -n kube-system | grep dexter-scheduler1 | awk -F" " '{print $1}')
+kubectl logs $POD1 -n kube-system
+
+Para exibir os logs sobre o segundo scheduler, execute os seguintes comandos:
+POD2=$(kubectl get pod -n kube-system | grep dexter-scheduler2 | awk -F" " '{print $1}')
+kubectl logs $POD2 -n kube-system
+
+Execute um Pod, utilizando o primeiro scheduler Cluster:
+cat 4541/aula04/schedulers/pod1.yaml
+kubectl create -f 4541/aula04/schedulers/pod1.yaml
+
+Verifique se o Pod foi agendando no Node 1, através do primeiro scheduler:
+kubectl describe pod pod1 | grep Scheduled
+
+Uma outra maneira de confirmar o agendamento é listando os Pods:
+kubectl get pod -o wide | grep pod1
+
+Execute um Pod, utilizando o segundo scheduler Cluster:
+cat 4541/aula04/schedulers/pod2.yaml
+kubectl create -f 4541/aula04/schedulers/pod2.yaml
+
+Verifique se o Pod foi agendando no Node 2, através do segundo scheduler:
+kubectl describe pod pod2 | grep Scheduled
+
+Um outra maneira de confirmar o agendamento é listando os Pods:
+kubectl get pod -o wide | grep pod2
+
+Para visualizar informações sobre o estados dos componentes do Cluster, execute:
+kubectl get events
+
+Filtre eventos sobre os scheduler da dexter no namespace kube-system:
+kubectl get events -n kube-system | grep dexter-scheduler
+
+Filtre eventos sobre os Pods no namespace default:
+kubectl get events | grep pod1
+kubectl get events | grep pod2
+
+Para acompanhar em tempo real os eventos no Cluster, execute o seguinte comando:
+kubectl get events --watch
+
+Para terminar, remova os Pods utilizando os testes de Schedulers:
+kubectl delete -f 4541/aula04/schedulers/pod1.yaml 
+kubectl delete -f 4541/aula04/schedulers/pod2.yaml
+
+
+
+
