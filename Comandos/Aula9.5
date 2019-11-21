@@ -1,0 +1,76 @@
+Visualize e aplique o conteúdo do arquivo nginx-replicaset.yaml para criar um ReplicaSet:
+cat 4541/aula05/replicaset/nginx-replicaset.yaml
+kubectl create -f 4541/aula05/replicaset/nginx-replicaset.yaml
+
+Liste os ReplicaSet para validar a criação do ReplicaSet:
+kubectl get rs -l app=web
+
+Verifique os detalhes do ReplicaSet, através do seguinte comando:
+kubectl describe rs nginx-replicas
+
+Logue com o usuário suporte e instale yum-utils, que fornece o utilitário yum-config-manager:
+kubectl edit rs nginx-replicas
+....
+DE:
+spec:
+  replicas: 3
+PARA:
+spec:
+  replicas: 4
+  
+Liste os Pods para validar a quantidade de réplicas criadas pelo ReplicaSet:
+kubectl get pods -l app=web
+
+Armazene o nome do último pod da lista na variável POD e confirme:
+POD=$(kubectl get pods -l app=web | awk -F" " '{print $1}' | tail -1)
+echo $POD
+
+Remova o Pod selecionado e verifique que um novo será criado pelo ReplicaSet:
+kubectl delete pod $POD
+kubectl get pods -l app=web
+
+Para terminar, remova o ReplicaSet a partir do arquivo nginx-replicaset.yaml:
+kubectl delete -f 4541/aula05/replicaset/nginx-replicaset.yaml
+
+Visualize e aplique o arquivo httpd-service.yaml para criar um Serviço na porta 80:
+cat 4541/aula05/statefulset/httpd-service.yaml
+kubectl create -f 4541/aula05/statefulset/httpd-service.yaml
+
+Visualize os detalhes do serviço criado, através do seguinte comando:
+kubectl describe service httpd-service
+
+Visualize e aplique o conteúdo do arquivo httpd-statefulset.yaml para criar um StatefulSet:
+cat 4541/aula05/statefulset/httpd-statefulset.yaml
+kubectl create -f 4541/aula05/statefulset/httpd-statefulset.yaml
+
+Para listar e exibir detalhes de um StatefulSet, execute os seguintes comandos:
+kubectl get statefulset
+kubectl describe statefulset apache-http
+
+Liste os Pods para testar se o StatefulSet foi criado corretamente:
+kubectl get pods -l app=httpd
+
+Altere a quantidade de réplicas do StatefulSet e verifique o resultado:
+kubectl scale statefulset apache-http --replicas=4
+kubectl describe statefulset apache-http
+
+Antes de aplicar um Patch, liste os Pods para verificar o estado atual do StatefulSet:
+kubectl get pods -l app=httpd
+
+Aplique o Patch no StatefulSet, alterando a quantidade de réplicas:
+kubectl patch sts apache-http -p '{"spec":{"replicas":2}}'
+kubectl get statefulset
+
+Visualize detalhes de um StatefulSet e liste os Pods para validar o Patch aplicado:
+kubectl describe statefulset apache-http
+kubectl get pods -l app=httpd
+
+Aplique o Patch no StatefulSet, alterando a imagem do Docker:
+kubectl patch statefulset apache-http --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/image", "value":"httpd:2-alpine"}]'
+
+Visualize detalhes de um StatefulSet para validar o Patch aplicado:
+kubectl describe statefulset apache-http
+
+Para terminar, remova o StatefulSet e o Serviço criado durante os testes:
+kubectl delete statefulset apache-http
+kubectl delete service httpd-service
