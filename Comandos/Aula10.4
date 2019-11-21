@@ -1,0 +1,102 @@
+Logue na VM Balancer e instale o servidor NFS e o editor VIM:
+vagrant ssh balancer
+sudo apt install nfs-kernel-server n vim -y
+
+Em seguida configure quais pastas o servidor NFS ira compartilhar na rede:
+vim /etc/exports
+/home/vagrant/data 172.27.11.0/24(rw,no_root_squash)
+/home/vagrant/mysql-data 172.27.11.0/24(rw,no_root_squash)
+/home/vagrant/wordpress-data 172.27.11.0/24(rw,no_root_squash)
+
+Crie a pastas que o servidor NFS ira compartilhar na rede:
+mkdir data mysql-data wordpress-data
+
+Reinicie o serviço do serviço NFS para aplicas as alterações:
+sudo systemctl restart nfs-kernel-server
+
+Verifique quais são os diretórios compartilhados pelo servidor NFS:
+$ sudo showmount -e balancer
+
+Logue com o usuário suporte e instale o pacote do cliente NFS nos Nodes do Cluster:
+sudo apt install nfs-common -y
+
+Em seguida, verifique quais são os diretórios compartilhados pelo servidor NFS:
+sudo showmount -e balancer
+
+Visualize e aplique o arquivo volume-nfs.yaml para criar um Volume Persistente com NFS:
+cat 4541/aula06/nfs/volume-nfs.yaml
+kubectl create -f 4541/aula06/nfs/volume-nfs.yaml
+
+Visualize e aplique o arquivo volume-nfs.yaml para criar um Volume Persistente com NFS:
+cat 4541/aula06/nfs/volume-nfs.yaml
+kubectl create -f 4541/aula06/nfs/volume-nfs.yaml
+
+Liste o Volume Persistente NFS, criado pelo comando anterior:
+kubectl get pv
+
+Para exibir detalhes de um Volume Persistente, execute o seguinte comando:
+kubectl describe pv nfs-volume
+
+Visualize e aplique o arquivo claim-nfs.yaml para criar um Volume Persistente Claim:
+cat 4541/aula06/nfs/claim-nfs.yaml
+kubectl create -f 4541/aula06/nfs/claim-nfs.yaml
+
+Para listar Volume Persistente Claim, execute o seguinte comando:
+kubectl get pvc
+
+Para exibir detalhes de um Volume Persistente Claim, execute o seguinte comando:
+$ kubectl describe pvc pvc-nfs
+
+Visualize e aplique o arquivo nginx-deploy2.yaml para criar um Deploy com PVC:
+cat 4541/aula06/nfs/nginx-deploy2.yaml
+kubectl create -f 4541/aula06/nfs/nginx-deploy2.yaml
+
+Verifique se o Pod foi iniciado corretamente:
+kubectl get pods -l app=nginx -o wide
+
+Abra outro terminal para conectar no Node 1 e verifique o compartilhamento NFS montado:
+vagrant ssh node1
+sudo df -Th | grep nfs
+
+Armazene o nome do Pod na variável POD e verifique se o volume NFS está montado:
+POD=$(kubectl get pods | grep nginx-deploy | awk -F" " '{print $1}')
+kubectl exec -it $POD -- df -Th
+
+Antes de testar o acesso ao container, armazene o IP do mesmo na variável HOST:
+HOST=$(kubectl get pod -o wide | grep nginx-deploy | awk -F" " '{print $6}')
+
+Teste o acesso a página da aplicação Nginx, através do comando curl:
+curl $HOST
+
+Abra outro terminal para conectar no Balancer e criar no diretório data o arquivo index.html:
+vagrant ssh balancer
+echo 'Servidor Nginx - Node 1' > data/index.html
+
+Na VM master teste novamente o acesso a página da aplicação Nginx:
+curl $HOST
+
+Verifique que o Pod está sendo executado no host Node 01:
+kubectl get pod -l app=nginx -o wide
+
+Edite o Deploy nginx-deploy para alterar o Node, onde o Pod está em execução:
+kubectl edit deployment nginx-deploy
+DE:
+      nodeSelector:
+        cloud: AWS
+PARA:
+      nodeSelector:
+        cloud: AZURE
+        
+Verifique que após a edição do Deploy, o Pod será executado no host Node 02:
+kubectl get pods -l app=nginx -o wide
+
+Abra outro terminal para conectar no Node 2 e verifique o compartilhamento NFS montado:
+vagrant ssh node2
+sudo df -Th | grep nfs
+
+Armazene o IP do Pod na variável HOST e acesse o mesmo para testar o volume NFS:
+HOST=$(kubectl get pod -o wide | grep nginx-deploy | awk -F" " '{print $6}')
+curl $HOST
+
+Para terminar os testes com volume persistente NFS, remova o Deploy nginx-deploy:
+kubectl delete -f 4541/aula06/nfs/nginx-deploy2.yaml
