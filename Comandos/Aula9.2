@@ -1,0 +1,93 @@
+Visualize e aplique o conteúdo do arquivo job1.yaml para criar um Job não paralelo:
+cat 4541/aula05/jobs/job1.yaml
+kubectl create -f 4541/aula05/jobs/job1.yaml
+
+Em seguida, liste o Pod criado a partir do Job:
+kubectl get all -l app=job1
+
+Para listar e exibir detalhes de um Job, execute os seguintes comandos:
+kubectl get job
+kubectl describe job job1
+
+Visualize os logs do container, armazenando seu nome em uma variável:
+pod=$(kubectl get pods --selector=job-name=job1 --output=jsonpath='{.items[*].metadata.name}')
+kubectl logs $pod
+
+Reinicie a politica de reinicio do container, substituindo o valor Never por OnFailure:
+vim 4541/aula05/jobs/job1.yaml
+DE
+      restartPolicy: Never
+PARA
+      restartPolicy: OnFailure
+      
+Aplique as configurações do arquivo para realizar a alteração no Job:
+kubectl delete -f 4541/aula05/jobs/job1.yaml
+kubectl apply -f 4541/aula05/jobs/job1.yaml
+
+Liste os Pods e mostre detalhes do job1:
+kubectl get all -l app=job1
+kubectl describe job job1
+
+Para terminar, remova o Job a partir do arquivo job1.yaml:
+kubectl delete -f 4541/aula05/jobs/job1.yaml
+
+Visualize o conteúdo do arquivo job2.yaml para criar um Job, utilizando contagem:
+cat 4541/aula05/jobs/job2.yaml
+
+No primeiro terminal, liste os Pods e no segundo aplique o conteúdo do arquivo job2.yaml:
+kubectl get pods -l app=job2 -w
+kubectl create -f 4541/aula05/jobs/job2.yaml
+
+Liste os Pods e mostre detalhes do Job job2:
+kubectl get pods -l app=job2
+kubectl describe job job2
+
+Liste os Pods para exibir o nome e seu Hash:
+kubectl get pods -l app=job2
+
+Escolha um Pod e visualize os logs, a partir do seguinte comando:
+kubectl logs job2-<hash>
+
+Para terminar, remova o Job a partir do arquivo job2.yaml:
+kubectl delete -f 4541/aula05/jobs/job2.yaml
+
+Visualize o conteúdo do arquivo job2.yaml para criar um Job, utilizando fila de contagem:
+cat 4541/aula05/jobs/job3.yaml
+
+No primeiro terminal, liste os Pods e no segundo aplique o conteúdo do arquivo job3.yaml:
+kubectl get pods -l app=job3 -w
+kubectl create -f 4541/aula05/jobs/job3.yaml
+
+Liste os Pods e mostre detalhes do Job job3:
+kubectl get pods -l app=job3
+kubectl describe job job3
+
+Liste os Pods para exibir o nome e seu Hash:
+kubectl get pods -l app=job3
+
+Escolha uma Pod e visualize os logs, a partir do seguinte comando:
+kubectl logs job3-<hash>
+
+Para terminar, remova o Job a partir do arquivo job3.yaml:
+kubectl delete -f 4541/aula05/jobs/job3.yaml
+
+Visualize e aplique o conteúdo do arquivo job4.yaml para criar um CronJob:
+cat 4541/aula05/jobs/job4.yaml
+kubectl create -f 4541/aula05/jobs/job4.yaml
+
+Para listar e exibir detalhes de um CronJob, execute os seguintes comandos:
+kubectl get cronjob
+kubectl describe cronjob job4
+
+Para acompanhar os jobs em tempo real, utilize a flag --watch no primeiro terminal:
+kubectl get jobs --watch
+
+Mostre informações do cronjob job4 no segundo terminal:
+kubectl get cronjob job4
+
+Liste os Pods para exibir o nome e seu Hash para visualizar os logs:
+kubectl get pods
+kubectl logs job4-<HASH>
+
+Para terminar, remova o Job a partir do arquivo job4.yaml:
+kubectl delete -f 4541/aula05/jobs/job4.yaml
