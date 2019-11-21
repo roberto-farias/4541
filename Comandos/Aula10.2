@@ -1,0 +1,50 @@
+Visualize e aplique o arquivo pod1.yaml para criar um Pod com volume, usando emptyDir:
+cat 4541/aula06/pod/pod1.yaml
+kubectl create -f 4541/aula06/pod/pod1.yaml
+
+Liste o Pod de nome pod1 para verificar se o mesmo está em execução:
+kubectl get pod pod1
+
+Verifique se o volume foi criado e montado no diretório /backup:
+kubectl exec -it pod1 -- df -Th
+kubectl exec -it pod1 -- ls /backup
+
+Teste o uso de volume, copiando o arquivo /etc/fstab para o diretório /backup:
+kubectl exec -it pod1 -- cp /etc/fstab /backup
+kubectl exec -it pod1 -- ls /backup
+
+Para visualizar o UID do volume no host Node 01, execute o seguinte comando:
+kubectl get pod pod1 -o yaml | grep uid
+
+Alterne para o host Node 1 e alterne para a conta do root:
+vagrant ssh node1
+sudo su -
+
+Acesse o diretório, onde o volume está alocado no host, usando como base o HASH:
+cd /var/lib/kubelet/pods/<HASH>/volumes/kubernetes.io~empty-dir/
+
+Teste a escrita no volume, copiando o arquivo /etc/hosts para o mesmo:
+ls backup-volume
+cp /etc/hosts backup-volume/
+ls backup-volume
+
+No servidor Master, verifique se o arquivo copiado no Node 1 está presente no volume:
+kubectl exec -it pod1 -- df -Th
+kubectl exec -it pod1 -- ls /backup
+
+Para terminar o teste com volume emptyDir, remova o Pod em execução:
+kubectl delete -f 4541/aula06/pod/pod1.yaml
+
+Visualize o arquivo pod2.yaml que será usado para criar um Pod com volume hostPath:
+cat 4541/aula06/pod/poad2.yaml
+
+Aplique o arquivo pod2.yaml e verifique se o pod2 está em execução:
+kubectl create -f 4541/aula06/pod/pod2.yaml
+kubectl get pod pod2
+
+Verifique se o volume foi criado e montado no diretório /backup:
+kubectl exec -it pod2 -- df -Th
+kubectl exec -it pod2 -- ls /backup
+
+Para terminar o teste com volume hostPathr, remova o Pod em execução:
+kubectl delete -f 4541/aula06/pod/pod2.yaml
