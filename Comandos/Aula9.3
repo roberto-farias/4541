@@ -1,0 +1,71 @@
+Visualize o conteúdo do arquivo mysql-secret.yaml que será usado na criação de um secret:
+cat 4541/aula05/secrets/mysql-secret.yaml
+
+Utilize o comando openssl para entender como foi criado os hashs utilizados no secret:
+echo -n "suporte" | openssl enc -base64
+echo -n "4linux" | openssl enc -base64
+
+Crie o secret, a partir do arquivo mysql-secret.yaml:
+kubectl create -f 4541/aula05/secrets/mysql-secret.yaml
+
+Para listar e exibir detalhes de um secret, execute os seguintes comandos:
+kubectl get secrets
+kubectl describe secret mysql-secrets
+
+Aplique o conteúdo do arquivo mysql-deploy1.yaml para criar um Deploy que utiliza secret:
+cat 4541/aula05/secrets/mysql-deploy1.yaml
+kubectl create -f 4541/aula05/secrets/mysql-deploy1.yaml
+
+Liste os Pods para testar se o Deploy foi criado corretamente:
+kubectl get all -l app=mysql
+
+Verifique se as variáveis de ambiente do MySQL foram criadas a partir do Secret:
+POD=$(kubectl get pods -o wide | grep mysql | awk -F" " '{print $1}')
+kubectl exec $POD env
+
+Antes de testar o acesso ao servidor de banco, instale o cliente do MySQL:
+sudo apt install mariadb-client -y
+
+Antes de testar o acesso ao servidor de banco, armazene o IP do Pod em uma variável:
+HOST=$(kubectl get pod -o wide | grep mysql | awk -F" " '{print $6}')
+
+Teste a conexão com o servidor de banco, utilizando usuário e senha criadas no Secret:
+mysql -h $HOST -u suporte -p4linux
+
+Realize um teste simples, listando os banco de dados e abandonando o MySQL:
+SHOW DATABASES;
+EXIT
+
+Para terminar o teste com Secrets, remova a execução do Deploy:
+kubectl delete -f 4541/aula05/secrets/mysql-deploy1.yaml
+
+Visualize o conteúdo do arquivo mysql-config.yaml que será usado na criação do configMap:
+cat 4541/aula05/secrets/mysql-config.yaml
+
+Crie o configMap, a partir do arquivo mysql-config.yaml:
+kubectl create -f 4541/aula05/secrets/mysql-config.yaml
+
+Para listar e exibir detalhes de um configMap, execute os seguintes comandos:
+kubectl get configmaps
+kubectl describe configmap mysql-config
+
+Crie o deploy com configMap, através do arquivo mysql-deploy2.yaml:
+cat aula05/secrets/mysql-deploy2.yaml
+kubectl create -f 4541/aula05/secrets/mysql-deploy2.yaml
+
+Lista os Pods para testar se o Deploy foi criado corretamente:
+kubectl get all -l app=mysql
+
+Verifique se as variáveis de ambiente do MySQL foram criadas a partir do configMap:
+POD=$(kubectl get pods | grep mysql | awk -F" " '{print $1}')
+kubectl exec $POD env
+
+Antes de testar o acesso ao servidor de banco, armazene o IP do container em uma variável:
+HOST=$(kubectl get pod -o wide | grep mysql | awk -F" " '{print $6}')
+
+Acesse o servidor de banco, utilizando usuário e senha criadas no configMap:
+mysql -h $HOST -u helpdesk -pdevops
+EXIT
+
+Para terminar o teste com configMap, remova a execução do Deploy:
+kubectl delete -f 4541/aula05/secrets/mysql-deploy2.yaml
