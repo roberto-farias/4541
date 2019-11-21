@@ -1,0 +1,63 @@
+Visualize e aplique o arquivo mysql-secret.yaml que será usado na criação de um Secret:
+cat 4541/aula06/configmap/mysql-secret.yaml
+kubectl apply -f 4541/aula06/configmap/mysql-secret.yaml
+
+Liste os Secrets para confirmar a criação do mysql-secrets:
+kubectl get secrets
+
+Para exibir detalhes de um Secret, execute o seguinte comando:
+kubectl describe secret mysql-secrets
+
+Visualize e aplique o arquivo mysql-configmap1.yaml para criar um ConfigMap para MySQL:
+cat 4541/aula06/configmap/mysql-configmap1.yaml
+kubectl create -f 4541/aula06/configmap/mysql-configmap1.yaml
+
+Liste os ConfigMaps para confirmar a criação do mysql-dexter-config:
+kubectl get configmaps
+
+Para exibir detalhes do ConfigMap mysql-dexter-config, execute o seguinte comando:
+kubectl describe configmap mysql-dexter-config
+
+Visualize e aplique o arquivo mysql-configmap2.yaml para criar outro ConfigMap para MySQL:
+cat 4541/aula06/configmap/mysql-configmap2.yaml
+kubectl create -f 4541/aula06/configmap/mysql-configmap2.yaml
+
+Liste os ConfigMaps para confirmar a criação do mysql-dexter-db:
+kubectl get configmaps
+
+Para exibir detalhes do ConfigMap mysql-dexter-db, execute o seguinte comando:
+kubectl describe configmap mysql-dexter-db
+
+Crie o deploy com configMap, através do arquivo mysql-deploy.yaml:
+cat 4541/aula06/configmap/mysql-deploy.yaml
+kubectl create -f 4541/aula06/configmap/mysql-deploy.yaml
+
+Lista os Pods para testar se o Deploy foi criado corretamente:
+kubectl get pod -l app=mysql
+
+Antes de testar o ConfigMap, declare o nome do Pod na variável POD:
+POD=$(kubectl get pods -o wide | grep mysql | awk -F" " '{print $1}')
+
+Verifique se as variáveis de ambiente do MySQL Verifique se o arquivo dexter.cnf foi criado, a partir do Configmap:
+kubectl exec -it $POD -- ls /etc/mysql/conf.d
+kubectl exec -it $POD -- cat /etc/mysql/conf.d/dexter.cnf criadas, a partir do Secret:
+kubectl exec $POD env
+
+Verifique se o arquivo dexter.cnf foi criado, a partir do Configmap:
+kubectl exec -it $POD -- ls /etc/mysql/conf.d
+kubectl exec -it $POD -- cat /etc/mysql/conf.d/dexter.cnf
+
+Verifique se o banco de dados dexter foi criado, a partir do Configmap:
+kubectl exec -it $POD -- ls /var/lib/mysql/dexter
+
+Armaze o IP do Pod em uma variável e teste a conexão com as informações do ConfigMap:
+HOST=$(kubectl get pod -o wide | grep mysql | awk -F" " '{print $6}')
+mysql -h $HOST -u suporte -p4linux -D dexter
+
+Realize um teste simples listando os banco de dados, e em seguida abandone o MySQL:
+SHOW DATABASES;
+EXIT
+
+Para terminar o teste com Volumes e ConfigMaps, remova a execução do Deploy:
+kubectl delete -f 4541/aula06/configmap/mysql-deploy.yaml
+
