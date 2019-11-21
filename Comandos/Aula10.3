@@ -1,0 +1,60 @@
+Visualize e aplique o conteúdo do arquivo storage-class.yaml para criar um Storage Class:
+cat 4541/aula06/storage/storage-class.yaml
+kubectl create -f 4541/aula06/storage/storage-class.yaml
+
+Liste os Storage Class, disponíveis no Cluster:
+kubectl get sc
+
+Verifique os detalhes do Storage Class, através do seguinte comando:
+kubectl describe sc local-storage
+
+Visualize e aplique o arquivo volume-local.yaml para criar um Volume Persistente:
+cat 4541/aula06/local/volume-local.yaml
+kubectl create -f 4541/aula06/local/volume-local.yaml
+
+Para listar e exibir detalhes de um Volume Persistente, execute os seguintes comandos:
+kubectl get pv
+kubectl describe pv pv-local
+
+Em seguida, abra outro terminal para conectar no Node1 e criar o diretório data:
+vagrant ssh node1
+mkdir data
+
+Visualize e aplique o arquivo volume-local.yaml para criar um Volume Persistente Claim:
+cat 4541/aula06/local/claim.local.yaml
+kubectl create -f 4541/aula06/local/claim.local.yaml
+
+Para listar Volume Persistente Claim, execute o seguinte comando:
+kubectl get pvc
+
+Para exibir detalhes de um Volume Persistente Claim, execute o seguinte comando:
+kubectl describe pvc volume-claim-local
+
+Visualize e aplique o arquivo nginx-deploy1.yaml para criar um Deploy com PVC:
+cat 4541/aula06/local/nginx-deploy1.yaml
+kubectl create -f 4541/aula06/local/nginx-deploy1.yaml
+
+Verifique se o Pod foi iniciado corretamente:
+kubectl get pod -l app=nginx -o wide
+
+Em seguida, armazene o nome do Pod na variável POD:
+POD=$(kubectl get pods | grep nginx-deploy | awk -F" " '{print $1}')
+
+Verifique se o volume foi criado e montado no diretório /usr/share/nginx/html:
+kubectl exec -it $POD -- mount | grep nginx
+
+Antes de testar o acesso ao container, armazene o IP do mesmo na variável HOST:
+HOST=$(kubectl get pods -o wide | grep nginx-deploy | awk -F" " '{print $6}')
+
+Teste o acesso a página da aplicação Nginx, através do comando curl:
+curl $HOST
+
+Abra outro terminal para conectar no Node1 e criar no diretório data o arquivo index.html:
+vagrant ssh node1
+echo 'Servidor Nginx - Node 1' > data/index.html
+
+Volte para a VM Master e teste novamente o acesso a página da aplicação Nginx:
+curl $HOST
+
+Para terminar os testes com volume persistente, remova o Deploy nginx-deploy na Master:
+kubectl delete -f 4541/aula06/local/nginx-deploy1.yaml
