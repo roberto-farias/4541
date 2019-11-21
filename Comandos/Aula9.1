@@ -1,0 +1,77 @@
+Visualize e aplique o conteúdo do arquivo deploy-nginx.yaml para criar um Deploy:
+cat 4541/aula05/deploy/nginx-deploy.yaml
+kubectl create -f 4541/aula05/deploy/nginx-deploy.yaml
+
+Para exibir informações detalhadas sobre um Deploy, execute o seguinte comando:
+kubectl describe deployment nginx-deploy
+
+Liste os containers e verifique a quantidade de réplicas criadas pelo Deploy:
+$ kubectl get pods -l app=nginx -o wide
+
+Crie um serviço expondo a aplicação na porta 80, através do seguinte comando:
+kubectl expose deployment nginx-deploy --port 80 --target-port 80
+
+Armazene o IP do serviço na variável APP e acesse a aplicação, através do comando curl:
+APP=$(kubectl get services | grep nginx-deploy | awk -F" " '{print $3}')
+curl $APP
+
+Para verificar o estado do rollback, execute o seguinte comando:
+$ kubectl rollout status deployment nginx-deploy
+
+Realize uma alteração no deploy, substituindo a image Docker nginx para httpd:
+$ kubectl set image deployment/nginx-deploy nginx=httpd --record
+
+Acesse a aplicação novamente e verifique se a aplicação foi alterada:
+curl $APP
+
+Para desfazer a alteração no Deploy, utilize o subcomando rollout undo:
+kubectl rollout undo deployment nginx-deploy
+
+Liste os containers e verifique se a imagem está sendo trocada para a nginx:
+kubectl get pods -l app=nginx -o wide
+
+Realize uma alteração no arquivo de deploy, substituindo a image Docker nginx para httpd:
+vim 4541/aula05/deploy/nginx-deploy.yaml
+....
+DE
+        image: nginx
+PARA
+        image: httpd
+        
+Aplique as configurações do arquivo para realizar a alteração da imagem:
+kubectl apply -f 4541/aula05/deploy/nginx-deploy.yaml --record
+
+Acesse a aplicação novamente e verifique se a aplicação foi alterada:
+kubectl get pods -l app=nginx -o wide
+curl $APP
+
+Para exibir históricos das alterações em Deploy, utilize o subcomando rollout history:
+kubectl rollout history deployment nginx-deploy
+kubectl rollout history deployment nginx-deploy --revision=4
+
+Para desfazer uma alteração em uma determinada revisão, utilize a flag --to-revision:
+kubectl rollout undo deployment nginx-deploy --to-revision=4
+kubectl rollout history deployment nginx-deploy
+
+Realize uma alteração no arquivo de deploy, substituindo o número de réplicas para 3:
+vim 4541/aula05/deploy/nginx-deploy.yaml
+....
+DE
+  replicas: 2
+PARA
+  replicas: 3
+  
+Aplique as configurações do arquivo para realizar a alteração no Deploy:
+kubectl apply -f 4541/aula05/deploy/nginx-deploy.yaml --record
+
+Para pausar o andamento de um Deploy, utilize o subcomando rollout pause:
+kubectl rollout pause deployment nginx-deploy
+kubectl rollout status deployment nginx-deploy
+
+Para tirar da pausa o andamento de um Deploy, utilize o subcomando rollout resume:
+kubectl rollout resume deployment nginx-deploy
+kubectl get pods -l app=nginx -o wide
+
+Para terminar, remova o deploy e o serviço nginx-deploy:
+kubectl delete -f 4541/aula05/deploy/nginx-deploy.yaml
+kubectl delete service nginx-deploy
