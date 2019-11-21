@@ -1,0 +1,71 @@
+Para começar instale o metric server através do Helm:
+helm install stable/metrics-server \
+--set rbac.create=true \
+--set args[0]="--kubelet-insecure-tls=true" \
+--set args[1]="--kubelet-preferred-address-types=InternalIP" \
+--set args[2]="--v=2" \
+--name metrics-server
+
+Liste os Pods criados pelo Metric Server e as APIs de metrics no Cluster:
+kubectl get pods -l k8s-app=metrics-server -n kube-system
+kubectl get --raw /apis/metrics.k8s.io/
+
+Para visualizar a utilização de CPU, memória e discos por nodes, execute o comando:
+kubectl top node
+
+É possível visualizar a utilização de CPU, memória e discos pelos Pods:
+kubectl top pod
+
+Podemos filtrar também as métricas por namespaces no Cluster:
+kubectl top pod --all-namespaces
+kubectl top pod -n kube-system
+
+Implemente e visualize as métricas do Deploy do MySQL:
+kubectl create -f 4541/aula05/secrets/mysql-deploy1.yaml
+kubectl top pod -l app=mysql
+
+Para monitorar somente a utilização do Pod em um Deploy, execute os comandos:
+POD=$(kubectl get pod | grep mysql | awk -F" " '{print $1}')
+kubectl top pod $POD --containers
+
+Para terminar os testes com métricas, remova o Deploy do MySQL:
+kubectl delete -f 4541/aula05/secrets/mysql-deploy1.yaml
+
+Visualize e aplique o conteúdo do arquivo deploy-nginx.yaml para criar um Deploy:
+cat 4541/aula03/ingress/http/deploy-nginx.yaml
+kubectl create -f 4541/aula03/ingress/http/deploy-nginx.yaml
+
+Liste os Pods para testar se o Deploy foi criado corretamente:
+kubectl get pods -l app=nginx
+
+Realize o escalonamento do Deploy para 3 réplicas e verifique a quantidade de Pods:
+kubectl scale deployment/nginx-deploy --replicas=3
+kubectl get pods -l app=nginx
+
+Crie um escalonamento, definindo o mínimo e máximo de réplicas a partir da utilização da CPU:
+kubectl autoscale deployment/nginx-deploy --min=1 --max=5 --cpu-percent=50
+
+Verifique se o horizontal pod autoscaler foi criado, através dos seguintes comandos:
+kubectl get hpa
+kubectl describe hpa nginx-deploy
+
+Liste novamente os Pods para validar a quantidade de réplicas:
+kubectl get pods -l app=nginx
+
+Liste e anote o IP do serviço do Nginx:
+kubectl get service
+
+Execute um Pod com a imagem busybox para testar o acesso ao servidor Nginx:
+kubectl run client --generator=run-pod/v1 --image=busybox /bin/sh
+
+Em outro terminal execute um loop while para continuar acessando a página do Nginx 
+while true; do wget -q -O - http://<IP_SERVICE_NGINX>; done
+
+Verifique os detalhes do HPA, através do seguinte comando:
+kubectl describe hpa nginx-deploy
+
+Para remover um HPA, utilizamos o subcomando delete hpa:
+kubectl delete hpa nginx-deploy
+
+Para terminar o teste com HPA, remova a execução do Deploy:
+kubectl delete -f 4541/aula03/ingress/http/deploy-nginx.yaml
