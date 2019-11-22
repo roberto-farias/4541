@@ -1,0 +1,42 @@
+Visualize o arquivo heapster.yaml para instalar o Heapster:
+cat 4541/aula08/dashboard/heapster.yaml
+kubectl create -f 4541/aula08/dashboard/heapster.yaml
+
+Visualize o arquivo influxdb.yaml para instalar o Influxdb:
+cat 4541/aula08/dashboard/influxdb.yaml
+kubectl create -f 4541/aula08/dashboard/influxdb.yaml
+
+Visualize o arquivo heapster-rbac.yaml para vincular a função do cluster do Heapster:
+cat 4541/aula08/dashboard/heapster-rbac.yaml
+kubectl create -f 4541/aula08/dashboard/heapster-rbac.yaml
+
+Visualize e aplique o arquivo kubernetes-dashboard.yaml para instalar o Dashboard:
+cat 4541/aula08/dashboard/kubernetes-dashboard.yaml
+kubectl create -f 4541/aula08/dashboard/kubernetes-dashboard.yaml
+
+Visualize e aplique o arquivo admin-user.yaml para criar o usuário admin-user:
+cat 4541/aula08/dashboard/admin-user.yaml
+kubectl create -f 4541/aula08/dashboard/admin-user.yaml
+
+Verifique se o pod do Kubernetes Dashboard está sendo executado:
+kubectl get pods -l k8s-app=kubernetes-dashboard -n kube-system
+
+Liste o serviço Kubernetes Dashboard no namespace kube-system:
+kubectl get service kubernetes-dashboard -n kube-system
+
+Edite o serviço do kubernetes-dashboard para alterar o tipo ClusterIP para NodePort:
+kubectl edit service kubernetes-dashboard -n kube-system
+ALTERAR:
+  type: ClusterIP
+PARA:
+  type: NodePort
+
+Visualize as informações do serviço kubernetes-dashboard e anote o IP do NodePort:
+kubectl get service kubernetes-dashboard -n kube-system
+
+Antes de acessar o Painel do Kubernetes, visualize e copie o token do usuário admin-user:
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
+
+Acesse o endereço https://172.27.11.10:<NodePort> e aceite o certificado:
+
+Em seguida, selecione a opção Token e cole o hash que você copiou:
