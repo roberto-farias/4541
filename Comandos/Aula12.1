@@ -1,0 +1,45 @@
+Visualize e aplique o arquivo mysql-deploy.yaml para criar um Deploy do MySQL:
+cat 4541/aula08/logs/mysql-deploy.yaml
+kubectl apply -f 4541/aula08/logs/mysql-deploy.yaml
+
+Em seguida, verifique as opções de uso do comando kubectl logs:
+kubectl logs --help
+
+Acompanhe os Logs do Deploy mysql, através dos seguintes comandos:
+kubectl logs deployment/mysql
+kubectl logs -f -l app=mysql --all-containers=true
+
+Para começar, armazene o nome do pod na variável POD:
+POD=$(kubectl get pod | grep mysql | awk -F" " '{print $1}')
+
+Acompanhe os Logs do Pod, através do seguinte comando:
+kubectl logs $POD
+
+Para visualizar as últimas 10 linhas do Log de um Pod, execute o seguinte comando:
+kubectl logs --tail=10 $POD
+
+Para visualizar os Logs nas últimas 1 hora de um Pod, execute o seguinte comando:
+kubectl logs --since=1h $POD
+
+Alterne para a conta do root e acesse o diretório, onde o Kubernetes armazena os logs:
+sudo su - 
+cd /var/log/containers/
+
+Visualize os Logs gerados pela Rede Calico e o Core DNS:
+cat calico-node<TAB>
+cat coredns-<TAB>
+
+Visualize os Logs gerados pelo servidor ETCD e Kube Proxy:
+cat etcd-master_kube-system<TAB>
+cat kube-proxy-<TAB>
+
+Visualize os Logs gerados pelo servidor Kube API Server e Kube Controller Manager:
+cat kube-apiserver-master.<TAB>
+cat kube-controller-manager-master.<TAB>
+
+Visualize os Logs gerados pelo servidor Kube Scheduler:
+cat kube-scheduler-master.<TAB>
+
+Para terminar, alterne para o usuário suporte e remova o Deploy do MySQL:
+exit
+kubectl delete -f 541/aula08/logs/mysql-deploy.yaml
