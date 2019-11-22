@@ -1,0 +1,73 @@
+Visualize e aplique o arquivo user-account.yaml para criar um usuário de serviço:
+cd 4541/aula07 
+cat auth-service-account/user-account.yaml 
+kubectl apply -f auth-service-account/user-account.yaml 
+
+Em seguida, visualize as informações do usuário operator:
+kubectl get serviceaccount operator -o yaml
+
+Confirme que o usuário possui um secret, criado pelo cluster kubernetes:
+$ kubectl get secret
+
+Armazene na variável SEC, o secret criado para o usuário operator:
+SEC=$(kubectl get secret | grep operator | awk -F" " '{ print $1}')
+
+Visualize o certificado, namespace e token do usuário operator, através do comando:
+kubectl get secret $SEC -o yaml
+
+Visualize o arquivo kubectl-client.yaml para executar um POD com permissão de usuário:
+cat auth-service-account/kubectl-client.yaml
+
+Aplique a configuração do arquivo kubectl-client.yaml para executar o POD:
+kubectl apply -f auth-service-account/kubectl-client.yaml 
+
+Visualize em qual diretório no PODV estão armazenadas as credenciais do usuário operator:
+kubectl get pods kubectl-client -o yaml | grep mountPath
+
+Liste o conteúdo do diretório no POD para visualizar as credenciais do usuário operator:
+kubectl exec -it kubectl-client -- ls /var/run/secrets/kubernetes.io/serviceaccount
+
+Teste a autorização do usuário operator, tentando listar Pods, Serviços e Nodes:
+kubectl exec -it kubectl-client -- kubectl get pods
+kubectl exec -it kubectl-client -- kubectl get services
+kubectl exec -it kubectl-client -- kubectl get nodes
+
+Visualize e aplique o arquivo role-operator.yaml para criar uma Role no Cluster:
+cat auth-service-account/role-operator.yaml
+kubectl apply -f auth-service-account/role-operator.yaml 
+
+Visualize e aplique o arquivo role-bindind-operator.yaml para criar uma RoleBinding:
+cat auth-service-account/role-binding-operator.yaml
+kubectl apply -f auth-service-account/role-binding-operator.yaml 
+
+Para listar e exibir detalhes de uma Role, execute os seguintes comandos:
+kubectl get roles
+kubectl describe role operator-role 
+
+Para listar e exibir detalhes de uma RoleBinding, execute os seguintes comandos:
+kubectl get rolebindings
+kubectl describe rolebinding operator-role-binding
+
+Para validar a Role e RoleBinding, tente listar Pods e Serviços, através do cliente kubectl:
+kubectl exec -it kubectl-client -- kubectl get pods
+kubectl exec -it kubectl-client -- kubectl get services
+
+As Cluster Role já existem no Cluster, precisamos apenas listar as disponíveis no Cluster:
+kubectl get clusterrole | less
+
+Para exibir os detalhes da ClusterRole que permitem gerenciar Nodes, execute o comando:
+kubectl describe clusterrole system:node
+
+Visualize e aplique o arquivo cluster-role-binding.yaml para criar uma ClusterRoleBinding:
+cat auth-service-account/cluster-role-binding.yaml
+kubectl apply -f auth-service-account/cluster-role-binding.yaml
+
+Para listar e exibir detalhes de uma CluserRoleBinding, execute os seguintes comandos:
+kubectl get clusterrolebinding cluster-nodes
+kubectl describe clusterrolebinding cluster-nodes
+
+Para validar a ClusterRole e ClusterRoleBinding, tente listar Nodes através do cliente kubectl:
+kubectl exec -it kubectl-client -- kubectl get nodes
+
+Para terminar o teste com o cliente kubectl, remova a execução do Pod:
+kubectl delete -f auth-service-account/kubectl-client.yaml 
