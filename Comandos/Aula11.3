@@ -43,6 +43,8 @@ cat config
 Desconecte da VM Master através do comando exit:
 exit
 
+######## COMANDOS EXECUTADOS NA MAQUINA FISICA ########
+
 Instale o plugin vagrant-scp através do seguinte comando:
 vagrant plugin install vagrant-scp
 
@@ -56,8 +58,24 @@ vagrant scp config balancer:/tmp
 vagrant scp devops.crt balancer:/tmp
 vagrant scp devops.key balancer:/tmp
 
-Conecte via ssh na VM balancer e crie o usuário devops:
+######## COMANDOS EXECUTADOS NA MAQUINA BALANCER ########
+
+Conecte via ssh na VM balancer 
 vagrant ssh balancer
+
+Realize a instalação do kubectl:
+
+sudo apt install curl
+
+export VERSION=v1.15.6
+export ARCH=amd64
+
+curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubectl > kubectl
+
+sudo install -o root -g root -m 0755 ./kubectl /usr/bin/kubectl
+
+Crie o usuário devops:
+
 sudo adduser devops
 
 Alterne para o usuário devops e copie o arquivo 'config' localizado na pasta /tmp:
@@ -68,15 +86,6 @@ Crie e copie para pasta .certs os certificados localizado na pasta /tmp::
 mkdir .certs
 cp /tmp/devops* .certs
 
-Realize a instalação do kubectl:
-
-export VERSION=v1.15.6
-export ARCH=amd64
-
-curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubectl > kubectl
-
-sudo install -o root -g root -m 0755 ./kubectl /usr/bin/kubectl
-
 Verifique se o usuário devops tem permissão de listar configurações e contextos kubeconfig:
 kubectl config view --kubeconfig=config
 kubectl config get-contexts --kubeconfig=config
@@ -85,9 +94,9 @@ Veja que o usuário devops não possui permissão de listar os Pods no namespace
 kubectl get pods -n projeto --kubeconfig=config
 
 Facilite o gerenciamento do Cluster, movendo o arquivo config para o subdiretório .kube:
-$ ls .kube
-$ mv config .kube
+ls .kube
+mv config .kube
 
 Veja que o usuário devops ainda não possui permissões no namespace projeto:
-$ kubectl get pods,deployments,services
-$ kubectl get secrets,pv,pvc,ing
+kubectl get pods,deployments,services
+kubectl get secrets,pv,pvc,ing
