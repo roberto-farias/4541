@@ -1,0 +1,119 @@
+O primeiro passo é verificar se o serviço do Kubelet está em execução:
+sudo systemctl status kubelet
+
+Verifique também se o serviço do Docker está em execução:
+sudo systemctl status docker
+
+Caso não tenha desativado o Swap no nó, realize os seguintes ajustes:
+sudo sed -i '/ swap / s/^/#/' /etc/fstab 
+sudo swapoff -a
+sudo swapon -s
+
+Logue no Node 2 e simule a parada do serviço do Kubelet:
+sudo systemctl stop kubelet
+
+Alterne para o Master, liste os nodes e verifique as informações do Node 2:
+kubectl get nodes
+kubectl describe node node2
+
+Ainda no Master, teste a conectividade com Node 2 para verificar a disponibilidade do Nó:
+ping -c4 node2
+
+Alterne para o Node 2 e verifique os logs sobre o serviço do Kubelet:
+sudo more /var/log/syslog | tail -100 | grep kubelet
+
+Ainda no Node 2, inicie o serviço do Kubelet:
+sudo systemctl start kubelet
+
+Alterne para o Master, liste os nodes e verifique as informações do Node 02:
+kubectl get nodes
+kubectl describe node node2
+
+Investigue problemas de agendamentos, listando os Pods de scheduler:
+kubectl get pods -n kube-system
+
+Armazene o nome do pod de scheduler na variável POD para facilitar a auditoria:
+POD=$(kubectl get pod -n kube-system | grep dexter-scheduler1 | awk -F" " '{print $1}')
+
+Investigue problemas de agendamentos, verificando os logs do Pod de scheduler:
+kubectl logs $POD -n kube-system
+
+Visualize e aplique o arquivo pod1.yaml que simula falha no download de imagem Docker:
+cat 4541/aula08/troubleshooting/pod1.yaml
+kubectl create -f 4541/aula08/troubleshooting/pod1.yaml
+
+Liste e verifique que na descrição do pod1, não é possível realizar o download da imagem:
+kubectl get pods pod1
+kubectl describe pod pod1 | grep Failed
+
+Utilize também os recursos de eventos e logs, conforme os seguintes comandos:
+kubectl get events | grep "Failed to pull image"
+kubectl logs pod1
+
+Edite o arquivo pod1.yaml para alterar a versão da imagem Docker:
+vim 4541/aula08/troubleshooting/pod1.yaml
+ALTERAR:
+  - image: nginx:1.16
+  
+Aplique a configuração do arquivo pod1.yaml e veja se agora o pod1 está sendo executado:
+kubectl apply -f 4541/aula08/troubleshooting/pod1.yaml
+kubectl get pods pod1
+
+Para terminar o teste com erro em imagem, remova o pod1:
+kubectl delete -f 4541/aula08/troubleshooting/pod1.yaml
+
+Visualize e aplique o arquivo pod2.yaml que simula falha na execução do container:
+cat 4541/aula08/troubleshooting/pod2.yaml
+kubectl create -f 4541/aula08/troubleshooting/pod2.yaml
+
+Liste e verifique que na descrição do pod2, não é possível executar o container:
+$ kubectl get pods pod2
+kubectl describe pods pod2 | grep Reason -A 5
+
+Utilize também os recursos de eventos e logs para visualizar o erro:
+kubectl get events
+kubectl get events | grep "failed container"
+
+Edite o arquivo pod2.yaml e adicione no final, comandos para a execução:
+vim 4541/aula08/troubleshooting/pod2.yaml +$
+ADICIONAR:
+   command: ["/bin/bash", "-ec", "while :;do echo '.'; sleep 5 ;done"]
+ restartPolicy: Never 
+
+Force as configurações do arquivo pod2.yaml e veja se o pod2 está sendo executado:
+kubectl replace -f 4541/aula08/troubleshooting/pod2.yaml --force
+kubectl get pods pod2
+
+Para terminar o teste com erro na execução de container, remova o pod2:
+kubectl delete -f 4541/aula08/troubleshooting/pod2.yaml
+
+Visualize e aplique o arquivo pod3.yaml que simula falha, devido a memória insuficiente:
+cat 4541/aula08/troubleshooting/pod3.yaml
+kubectl create -f 4541/aula08/troubleshooting/pod3.yaml
+
+Liste e verifique que na descrição do pod3, não é possível executar o container:
+kubectl get pods pod3
+kubectl describe pod pod3 | grep Events -A 5
+
+Utilize também os recursos de eventos e logs para visualizar o erro:
+kubectl get events | grep pod3
+kubectl get events | grep FailedScheduling
+
+Antes de realizar o ajuste, crie o arquivo pod3-temp.yaml com as informações do pod3:
+kubectl get pods pod3 -o yaml > /tmp/pod3-temp.yaml
+
+Edite o arquivo pod3-temp.yaml para diminuir a quantidade de memória alocada:
+vim /tmp/pod3-temp.yaml 
+DE:
+        memory: 9999Mi
+PARA:
+        memory: 999Mi
+        
+Force as configurações do arquivo pod3-temp.yaml:
+kubectl replace -f /tmp/pod3-temp.yaml --force
+
+Verifique se o container está em execução:
+kubectl get pods pod3
+
+Para terminar o teste com falta de memória na execução de container, remova o pod3:
+kubectl delete -f 4541/aula08/troubleshooting/pod3.yaml
