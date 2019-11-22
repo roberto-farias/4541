@@ -30,18 +30,11 @@ Atualize a lista de pacotes e instale os pacotes git elinks:
 sudo apt update
 sudo apt install git elinks -y
 
+ALterne para a conta do usuário devops
+sudo su - devops
+
 Obtenha os arquivos do curso através do seguinte comando:
 git clone https://github.com/4linux/4541
-
-Armazene em variáveis a última versão das ferramentas do Cluster e a arquitetura:
-export VERSION=v1.15.6
-export ARCH=amd64
-
-Realize o download da ferramenta kubectl, utilizando as informações das variáveis:
-curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubectl > kubectl
-
-Instale o kubectl na pasta /usr/bin com permissão 0775, usuário e grupo do root:
-sudo install -o root -g root -m 0755 ./kubectl /usr/bin/kubectl
 
 Visualize e aplique o arquivo mysql-secret.yaml para criar um Secret ao Wordpress:
 cat 4541/wordpress-deploy/mysql-secret.yaml 
