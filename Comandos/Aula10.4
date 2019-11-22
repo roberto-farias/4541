@@ -15,17 +15,13 @@ Reinicie o serviço do serviço NFS para aplicas as alterações:
 sudo systemctl restart nfs-kernel-server
 
 Verifique quais são os diretórios compartilhados pelo servidor NFS:
-$ sudo showmount -e balancer
+sudo showmount -e balancer
 
 Logue com o usuário suporte e instale o pacote do cliente NFS nos Nodes do Cluster:
 sudo apt install nfs-common -y
 
 Em seguida, verifique quais são os diretórios compartilhados pelo servidor NFS:
 sudo showmount -e balancer
-
-Visualize e aplique o arquivo volume-nfs.yaml para criar um Volume Persistente com NFS:
-cat 4541/aula06/nfs/volume-nfs.yaml
-kubectl create -f 4541/aula06/nfs/volume-nfs.yaml
 
 Visualize e aplique o arquivo volume-nfs.yaml para criar um Volume Persistente com NFS:
 cat 4541/aula06/nfs/volume-nfs.yaml
@@ -45,7 +41,7 @@ Para listar Volume Persistente Claim, execute o seguinte comando:
 kubectl get pvc
 
 Para exibir detalhes de um Volume Persistente Claim, execute o seguinte comando:
-$ kubectl describe pvc pvc-nfs
+kubectl describe pvc pvc-nfs
 
 Visualize e aplique o arquivo nginx-deploy2.yaml para criar um Deploy com PVC:
 cat 4541/aula06/nfs/nginx-deploy2.yaml
