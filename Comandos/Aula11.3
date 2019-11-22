@@ -1,3 +1,6 @@
+
+######## COMANDOS EXECUTADOS NA VM MASTER ########
+
 Crie e acesse o diretório para armazenar credenciais do usuário da máquina cliente:
 mkdir -p ~/.kube/users
 cd ~/.kube/users
@@ -65,12 +68,21 @@ Crie e copie para pasta .certs os certificados localizado na pasta /tmp::
 mkdir .certs
 cp /tmp/devops* .certs
 
+Realize a instalação do kubectl:
+
+export VERSION=v1.15.6
+export ARCH=amd64
+
+curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubectl > kubectl
+
+sudo install -o root -g root -m 0755 ./kubectl /usr/bin/kubectl
+
 Verifique se o usuário devops tem permissão de listar configurações e contextos kubeconfig:
-$ kubectl config view --kubeconfig=config
-$ kubectl config get-contexts --kubeconfig=config
+kubectl config view --kubeconfig=config
+kubectl config get-contexts --kubeconfig=config
 
 Veja que o usuário devops não possui permissão de listar os Pods no namespace projeto:
-$ kubectl get pods -n projeto --kubeconfig=config
+kubectl get pods -n projeto --kubeconfig=config
 
 Facilite o gerenciamento do Cluster, movendo o arquivo config para o subdiretório .kube:
 $ ls .kube
