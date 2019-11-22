@@ -1,0 +1,81 @@
+Crie e acesse o diretório para armazenar credenciais do usuário da máquina cliente:
+mkdir -p ~/.kube/users
+cd ~/.kube/users
+
+Em seguida, crie a chave devops.key com 2048 bits:
+openssl genrsa -out devops.key 2048
+
+O próximo passo é criar uma requisição de certificado, utilizando a chave criada:
+openssl req -new -key devops.key -out devops.csr -subj "/CN=devops/O=devops/O=dexter.com.br"
+
+Para terminar, crie um certificado autoassinado, utilizando a requisição e chave:
+sudo openssl x509 -req -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -days 365 -in devops.csr -out devops.crt
+
+Defina uma entrada do usuário devops no kubeconfig, utilizando o certificado e chave:
+kubectl config set-credentials devops --client-certificate=devops.crt --client-key=devops.key
+
+Verifique se o usuário devops foi incluso nas configurações kubeconfig:
+kubectl config view
+
+Antes de iniciar ou gerenciar contextos, vamos criar um namespace de nome projeto:
+kubectl create namespace projeto
+
+Em seguida, visualize contextos do kubeconfig:
+kubectl config get-contexts
+
+Define uma entrada do usuário devops no contexto kubeconfig do namespace projeto:
+kubectl config set-context devops --cluster=kubernetes --user=devops --namespace=projeto
+kubectl config get-contexts
+
+Filtre e redirecione para o arquivo config, informações não usadas pelo contexto do usuário:
+kubectl config view --flatten --minify | awk '/contexts:/{exit}1' > config
+
+Visualize nosso arquivo modelo com a configuração para o usuário devop:
+cat /home/vagrant/4541/aula07/context/config-devops
+
+Inclua no final do arquivo config, informações sobre certificado do usuário devops:
+cat /home/vagrant/4541/aula07/context/config-devops >> config
+cat config
+
+Desconecte da VM Master através do comando exit:
+exit
+
+Instale o plugin vagrant-scp através do seguinte comando:
+vagrant plugin install vagrant-scp
+
+Copie para a máquina Master para a Física os arquivo 'config', 'devops.crt' e 'devops.key':
+vagrant scp master:.kube/users/config .
+vagrant scp master:.kube/users/devops.crt .
+vagrant scp master:.kube/users/devops.key .
+
+Copie para a máquina Física para a Balancer os arquivo 'config', 'devops.crt' e 'devops.key':
+vagrant scp config balancer:/tmp
+vagrant scp devops.crt balancer:/tmp
+vagrant scp devops.key balancer:/tmp
+
+Conecte via ssh na VM balancer e crie o usuário devops:
+vagrant ssh balancer
+sudo adduser devops
+
+Alterne para o usuário devops e copie o arquivo 'config' localizado na pasta /tmp:
+sudo su - devops cp 
+cp /tmp/config .
+
+Crie e copie para pasta .certs os certificados localizado na pasta /tmp::
+mkdir .certs
+cp /tmp/devops* .certs
+
+Verifique se o usuário devops tem permissão de listar configurações e contextos kubeconfig:
+$ kubectl config view --kubeconfig=config
+$ kubectl config get-contexts --kubeconfig=config
+
+Veja que o usuário devops não possui permissão de listar os Pods no namespace projeto:
+$ kubectl get pods -n projeto --kubeconfig=config
+
+Facilite o gerenciamento do Cluster, movendo o arquivo config para o subdiretório .kube:
+$ ls .kube
+$ mv config .kube
+
+Veja que o usuário devops ainda não possui permissões no namespace projeto:
+$ kubectl get pods,deployments,services
+$ kubectl get secrets,pv,pvc,ing
