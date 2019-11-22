@@ -1,0 +1,37 @@
+Vamos analisar como está o node node1:
+kubectl describe node node1
+
+Podemos cancelar a eleição de um determinado node para o scheduling através do comando:
+kubectl cordon node1
+
+De agora em diante, nenhum Pod será adicionado neste node!
+
+Faça o teste criando um deploy com 3 réplicas:
+kubectl create deploy nginx --image nginx
+kubectl scale deploy nginx --replicas=3
+
+Veja que todos os pods nginx estão no node2:
+kubectl get pods -o wide
+
+Para remover a marca que evita os pods de serem adicionados na node1 utilize:
+kubectl uncordon node1
+kubectl delete deploy nginx
+
+Crie 10 réplicas de um determinado pod:
+kubectl create deploy nginx --image nginx
+kubectl scale deploy nginx --replicas=3
+
+Espere um pouco e veja os pods distribuídos entre os nodes:
+kubectl get pods -o wide
+
+Para remover todos os pods de um determinado node - por motivos drásticos - podemos utilizar o comando:
+kubectl drain node2 --ignore-daemonsets
+
+Veja que todos os pods foram para o node1:
+kubectl getpods -o wide
+
+Para remover a marcação de evacuação, execute o seguinte comando:
+kubectl uncordon node2
+kubectl delete deploy nginx
+
+A redistribuição dos pods deverá ser feita manualmente!
