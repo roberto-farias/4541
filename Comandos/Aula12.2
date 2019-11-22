@@ -1,0 +1,41 @@
+Visualize e aplique o arquivo liveness-exec.yaml para testar o Liveness de comandos:
+cat 4541/aula08/liveness/liveness-exec.yaml
+kubectl create -f 4541/aula08/liveness/liveness-exec.yaml
+
+Verifique se o Pod liveness-exec está sendo executado:
+kubectl get pods -l test=liveness
+
+Para verificar se o Liveness foi aplicado ao Pod, visualize os eventos através do comando:
+kubectl get events | grep liveness-exec
+
+Visualize e aplique o arquivo liveness-http.yaml para testar o Liveness de acesso HTTP:
+cat 4541/aula08/liveness/liveness-http.yaml
+kubectl create -f 4541/aula08/liveness/liveness-http.yaml
+
+Verifique se o Pod liveness-http está sendo executado e se o Liveness foi aplicado ao Pod:
+kubectl get pods -l test=liveness
+kubectl get events | grep liveness-http
+
+Para terminar os testes com Liveness, remova os Pods através do seguinte comando:
+kubectl delete -f 4541/aula08/liveness
+
+Visualize e aplique o arquivo readiness-exec.yaml para testar o Readiness de comandos:
+cat 4541/aula08/readiness/readiness-exec.yaml
+kubectl create -f 4541/aula08/readiness/readiness-exec.yaml
+
+Verifique se o Pod readiness-exec está sendo executado:
+kubectl get pods -l test=readiness
+
+Para verificar se o Readiness foi aplicado ao Pod, visualize os eventos através do comando:
+kubectl get events | grep readiness-exec
+
+Visualize e aplique o arquivo readiness-http.yaml para testar o Readieness HTTP:
+cat 4541/aula08/readiness/readiness-http.yaml
+kubectl create -f 4541/aula08/readiness/readiness-http.yaml
+
+Verifique se o Pod readiness-http está sendo executado e se o Readiness foi aplicado:
+kubectl get pods -l test=readiness
+kubectl get events | grep readiness-http
+
+Para terminar os testes com Readiness, remova os Pods através do seguinte comando:
+kubectl delete -f 4541/aula08/readiness
